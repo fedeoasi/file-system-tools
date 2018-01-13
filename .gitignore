@@ -2,3 +2,4 @@
 *.log
 .idea
 target
+external_hard_drive*
