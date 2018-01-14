@@ -11,6 +11,7 @@ object EntryPersistence {
   val ParentField = "Parent"
   val NameField = "Name"
   val Md5Field = "MD5"
+  val SizeField = "Size"
 
   def read(filename: String): Seq[FileSystemEntry] = {
     val entriesFile = Paths.get(filename)
@@ -21,7 +22,7 @@ object EntryPersistence {
     managed(CSVReader.open(file.toFile)).acquireAndGet { reader =>
       reader.allWithHeaders().map { row =>
         row(EntryTypeField) match {
-          case "F" => FileEntry(row(ParentField), row(NameField), row(Md5Field))
+          case "F" => FileEntry(row(ParentField), row(NameField), row(Md5Field), row(SizeField).toLong)
           case "D" => DirectoryEntry(row(ParentField), row(NameField))
           case other => throw new RuntimeException(s"Unrecognized entry type $other")
         }
@@ -30,7 +31,7 @@ object EntryPersistence {
   }
 
   def write(entries: Seq[FileSystemEntry], toFile: Path, append: Boolean = false): Unit = {
-    val header = Seq(EntryTypeField, ParentField, NameField, Md5Field)
+    val header = Seq(EntryTypeField, ParentField, NameField, Md5Field, SizeField)
     val csvEntries = toCsvSeq(entries)
     val allEntries = if (!append) Seq(header) ++ csvEntries else csvEntries
     writeCsv(allEntries, toFile, append)
@@ -38,7 +39,7 @@ object EntryPersistence {
 
   private def toCsvSeq(entries: Seq[FileSystemEntry]): Seq[Seq[Any]] = {
     entries.map {
-      case FileEntry(parent, name, md5) => Seq("F", parent, name, md5)
+      case FileEntry(parent, name, md5, size) => Seq("F", parent, name, md5, size)
       case DirectoryEntry(parent, name) => Seq("D", parent, name, "")
     }
   }

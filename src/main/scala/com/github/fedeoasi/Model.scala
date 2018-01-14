@@ -9,7 +9,7 @@ object Model {
 
   case class DirectoryEntry(parent: String, name: String) extends FileSystemEntry
 
-  case class FileEntry(parent: String, name: String, md5: String) extends FileSystemEntry {
+  case class FileEntry(parent: String, name: String, md5: String, size: Long) extends FileSystemEntry {
     def extension: Option[String] = name.split("\\.").toSeq.lastOption
   }
 

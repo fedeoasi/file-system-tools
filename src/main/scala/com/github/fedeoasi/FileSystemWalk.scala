@@ -51,7 +51,7 @@ class FileSystemWalk(directory: Path, existingEntries: Seq[FileSystemEntry] = Se
     Try {
       managed(new FileInputStream(file)).acquireAndGet { fis =>
         val md5 = DigestUtils.md5Hex(fis)
-        FileEntry(file.getParent, file.getName, md5)
+        FileEntry(file.getParent, file.getName, md5, file.length())
       }
     } match {
       case Success(fileEntry) => Some(fileEntry)

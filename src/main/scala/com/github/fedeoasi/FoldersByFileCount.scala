@@ -38,9 +38,7 @@ object FoldersByFileCount {
     */
   def main(args: Array[String]): Unit = {
     val folder = args(0)
-    val backupFile = Constants.DefaultMetadataFile
-    val entriesFile = Paths.get(backupFile)
-    val entries = EntryPersistence.read(entriesFile)
+    val entries = EntryPersistence.read(Constants.DefaultMetadataFile)
 
     val entriesByParent = entries.groupBy(_.parent)
 
