@@ -1,7 +1,5 @@
 package com.github.fedeoasi
 
-import java.nio.file.{Files, Path}
-
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
 import org.scalatest.{FunSpec, Matchers}
 
@@ -26,15 +24,3 @@ class EntryPersistenceTest extends FunSpec with Matchers with TemporaryFiles {
     }
   }
 }
-
-trait TemporaryFiles {
-  def withTmpFile[T](prefix: String, suffix: String)(f: Path => T): T = {
-    val tmpFile = Files.createTempFile(prefix, suffix)
-    try {
-      f(tmpFile)
-    } finally {
-      tmpFile.toFile.delete()
-    }
-  }
-}
-
