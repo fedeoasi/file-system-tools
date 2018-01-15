@@ -11,3 +11,11 @@ object FilesBySize {
     println(largestFiles.mkString("\n"))
   }
 }
+
+object TotalSize {
+  def main(args: Array[String]): Unit = {
+    val entries = EntryPersistence.read(Constants.DefaultMetadataFile)
+    val totalSize = FileEntries(entries).map(_.size).sum
+    println(s"The total size in bytes is $totalSize")
+  }
+}
