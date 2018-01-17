@@ -1,15 +1,9 @@
 package com.github.fedeoasi
 
-import com.github.fedeoasi.CompareFolders.diffFolders
+import com.github.fedeoasi.FolderComparison.FolderDiff
 import com.github.fedeoasi.Model.{DirectoryEntries, DirectoryEntry, FileEntries, FileEntry}
 
 trait FolderComparison {
-  case class FolderDiff(
-    source: String,
-    target: String,
-    equalEntries: Set[(String, String)],
-    differentEntries: Set[(String, String)])
-
   def diffFolders(source: String, target: String, files: Seq[FileEntry]): FolderDiff = {
     //println(s"Diffing folder $folder1 with $folder2")
     val sourceFiles = allFilesForFolder(files, source)
@@ -30,6 +24,14 @@ trait FolderComparison {
     val recursiveFiles = files.filter(_.path.startsWith(folder))
     recursiveFiles.map(f => (f.name, f.md5)).toSet
   }
+}
+
+object FolderComparison {
+  case class FolderDiff(
+    source: String,
+    target: String,
+    equalEntries: Set[(String, String)],
+    differentEntries: Set[(String, String)])
 }
 
 object CompareFolders extends FolderComparison {
@@ -67,30 +69,4 @@ object CompareFolders extends FolderComparison {
   }
 }
 
-object FindIdenticalFolders {
-  /** Find identical folders present in the metadata file. */
-  def main(args: Array[String]): Unit = {
-    val entries = EntryPersistence.read(Constants.DefaultMetadataFile)
-    val entriesByParent = entries.groupBy(_.parent)
-    val files = FileEntries(entries)
-    val nonEmptyDirectories = DirectoryEntries(entries).filter(d => entriesByParent.contains(d.path))
-    val duplicatesByName = nonEmptyDirectories.groupBy(_.name).filter(_._2.size > 1)
-    println(s"There are ${nonEmptyDirectories.size} non empty directories and ${duplicatesByName.size} names that are duplicated")
-    val folderDiffs = duplicatesByName.flatMap { case (_, duplicateFolders) =>
-      val Seq(d1, d2, _*) = duplicateFolders
-      if (d1.path.contains(d2.path) || d2.path.contains(d1.path)) {
-        None
-      } else {
-        val diff = diffFolders(d1.path, d2.path, files)
-        if (diff.differentEntries.isEmpty) {
-          Some(diff)
-        } else {
-          None
-        }
-      }
-    }
-    folderDiffs.toSeq.filter(_.equalEntries.nonEmpty).sortBy(_.equalEntries.size).reverse.foreach { d =>
-      println(s"${d.source} is identical to ${d.target} ${d.equalEntries.size}")
-    }
-  }
-}
+
