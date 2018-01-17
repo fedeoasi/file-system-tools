@@ -6,4 +6,5 @@ object Dependencies {
   lazy val commonsIo = "commons-io" % "commons-io" % "2.4"
   lazy val commonsCodec = "commons-codec" % "commons-codec" % "1.10"
   lazy val scalaCsv = "com.github.tototoshi" %% "scala-csv" % "1.3.5"
+  lazy val sparkCore = "org.apache.spark" %% "spark-core" % "2.2.1"
 }
