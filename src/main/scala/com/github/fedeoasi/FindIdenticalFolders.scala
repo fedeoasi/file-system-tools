@@ -1,5 +1,6 @@
 package com.github.fedeoasi
 
+import com.github.fedeoasi.FindIdenticalFolders.findIdenticalFolders
 import com.github.fedeoasi.FolderComparison.FolderDiff
 import com.github.fedeoasi.Model._
 import org.apache.spark.{SparkConf, SparkContext}
@@ -60,6 +61,21 @@ object FindIdenticalFolders {
       .reverse
       .foreach { d =>
         println(s"${d.source} is identical to ${d.target} ${d.equalEntries.size}")
+      }
+  }
+}
+
+object FindSimilarFolders {
+  def main(args: Array[String]): Unit = {
+    val entries = EntryPersistence.read(Constants.DefaultMetadataFile)
+    val folderDiffs = findIdenticalFolders(entries)
+    folderDiffs
+      .filter(d => d.equalEntries.nonEmpty && d.differentEntries.nonEmpty)
+      .sortBy(d => d.equalEntries.size - d.differentEntries.size)
+      .reverse
+      .take(50)
+      .foreach { d =>
+        println(s"${d.source} is identical to ${d.target} ${d.equalEntries.size} ${d.differentEntries.size}")
       }
   }
 }
