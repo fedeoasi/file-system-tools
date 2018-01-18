@@ -1,8 +1,9 @@
 package com.github.fedeoasi
 
 import java.nio.file.{Path, Paths}
+import java.time.Instant
 
-import com.github.fedeoasi.Model.{DirectoryEntry, FileSystemEntry, FileEntry}
+import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry, FileSystemEntry}
 import com.github.tototoshi.csv.{CSVReader, CSVWriter}
 import resource._
 
@@ -12,6 +13,7 @@ object EntryPersistence {
   val NameField = "Name"
   val Md5Field = "MD5"
   val SizeField = "Size"
+  val ModifiedTimeField = "ModifiedTime"
 
   def read(filename: String): Seq[FileSystemEntry] = {
     val entriesFile = Paths.get(filename)
@@ -21,9 +23,10 @@ object EntryPersistence {
   def read(file: Path): Seq[FileSystemEntry] = {
     managed(CSVReader.open(file.toFile)).acquireAndGet { reader =>
       reader.allWithHeaders().map { row =>
+        val modifiedTime = Instant.ofEpochMilli(row(ModifiedTimeField).toLong)
         row(EntryTypeField) match {
-          case "F" => FileEntry(row(ParentField), row(NameField), row(Md5Field), row(SizeField).toLong)
-          case "D" => DirectoryEntry(row(ParentField), row(NameField))
+          case "F" => FileEntry(row(ParentField), row(NameField), row(Md5Field), row(SizeField).toLong, modifiedTime)
+          case "D" => DirectoryEntry(row(ParentField), row(NameField), modifiedTime)
           case other => throw new RuntimeException(s"Unrecognized entry type $other")
         }
       }
@@ -31,7 +34,7 @@ object EntryPersistence {
   }
 
   def write(entries: Seq[FileSystemEntry], toFile: Path, append: Boolean = false): Unit = {
-    val header = Seq(EntryTypeField, ParentField, NameField, Md5Field, SizeField)
+    val header = Seq(EntryTypeField, ParentField, NameField, Md5Field, SizeField, ModifiedTimeField)
     val csvEntries = toCsvSeq(entries)
     val allEntries = if (!append) Seq(header) ++ csvEntries else csvEntries
     writeCsv(allEntries, toFile, append)
@@ -39,8 +42,10 @@ object EntryPersistence {
 
   private def toCsvSeq(entries: Seq[FileSystemEntry]): Seq[Seq[Any]] = {
     entries.map {
-      case FileEntry(parent, name, md5, size) => Seq("F", parent, name, md5, size)
-      case DirectoryEntry(parent, name) => Seq("D", parent, name, "")
+        case FileEntry(parent, name, md5, size, modifiedTime) =>
+          Seq("F", parent, name, md5, size, modifiedTime.toEpochMilli)
+        case DirectoryEntry(parent, name, modifiedTime) =>
+          Seq("D", parent, name, "", "", modifiedTime.toEpochMilli)
     }
   }
 

@@ -2,8 +2,9 @@ package com.github.fedeoasi
 
 import java.io.{File, FileInputStream}
 import java.nio.file.Path
+import java.time.Instant
 
-import com.github.fedeoasi.Model.{DirectoryEntry, FileSystemEntry, FileEntry}
+import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry, FileSystemEntry}
 import org.apache.commons.codec.digest.DigestUtils
 import resource.managed
 
@@ -43,7 +44,7 @@ class FileSystemWalk(directory: Path, existingEntries: Seq[FileSystemEntry] = Se
   }
 
   private def createDirectory(file: File): DirectoryEntry = {
-    DirectoryEntry(file.getParent, file.getName)
+    DirectoryEntry(file.getParent, file.getName, Instant.ofEpochMilli(file.lastModified()))
   }
 
   private def createFile(file: File): Option[FileEntry] = {
@@ -51,7 +52,7 @@ class FileSystemWalk(directory: Path, existingEntries: Seq[FileSystemEntry] = Se
     Try {
       managed(new FileInputStream(file)).acquireAndGet { fis =>
         val md5 = DigestUtils.md5Hex(fis)
-        FileEntry(file.getParent, file.getName, md5, file.length())
+        FileEntry(file.getParent, file.getName, md5, file.length(), Instant.ofEpochMilli(file.lastModified()))
       }
     } match {
       case Success(fileEntry) => Some(fileEntry)
