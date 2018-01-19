@@ -5,7 +5,7 @@ import java.nio.file.{Path, Paths}
 object GenerateMetadata {
   case class GenerateMetadataReport(added: Long, total: Long)
 
-  def generateMetadata(folder: Path, metadataFile: String = Constants.DefaultMetadataFile): GenerateMetadataReport = {
+  def generateMetadata(folder: Path, metadataFile: String): GenerateMetadataReport = {
     val entriesFile = Paths.get(metadataFile)
     val entriesFileExists = entriesFile.toFile.exists()
     val existingEntries = if (entriesFileExists) EntryPersistence.read(entriesFile) else Seq.empty
@@ -17,12 +17,13 @@ object GenerateMetadata {
 
   /** Generate metadata file for a folder and dump it to a file (external_hard_drive.csv).
     *
-    * @param args [FOLDER]
+    * @param args [FOLDER] [METADATA_FILENAME]
     */
   def main(args: Array[String]): Unit = {
     val folderName = args(0)
+    val metadataFilename = if (args.length > 1) args(1) else Constants.DefaultMetadataFile
     val folder = Paths.get(folderName)
-    val report = generateMetadata(folder)
+    val report = generateMetadata(folder, metadataFilename)
     println(s"Added: ${report.added} Total: ${report.total}")
   }
 }
