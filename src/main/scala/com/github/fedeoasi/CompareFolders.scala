@@ -1,37 +1,66 @@
 package com.github.fedeoasi
 
 import com.github.fedeoasi.FolderComparison.FolderDiff
-import com.github.fedeoasi.Model.{DirectoryEntries, DirectoryEntry, FileEntries, FileEntry}
+import com.github.fedeoasi.Model.{DirectoryEntry, FileEntries, FileEntry}
 
 trait FolderComparison {
   def diffFolders(source: String, target: String, files: Seq[FileEntry]): FolderDiff = {
-    //println(s"Diffing folder $folder1 with $folder2")
     val sourceFiles = allFilesForFolder(files, source)
+    val sourceFileById = sourceFiles.map { file =>
+      val id = toRelativePath(file, source)
+      (id, file)
+    }.toMap
     val targetFiles = allFilesForFolder(files, target)
+    val targetFileById = targetFiles.map { file =>
+      val id = toRelativePath(file, target)
+      (id, file)
+    }.toMap
 
-    val diff12 = sourceFiles.diff(targetFiles)
-    val diff21 = targetFiles.diff(sourceFiles)
-
-    //use relative paths for equal entries so that we can dedup
-    FolderDiff(source, target, sourceFiles ++ targetFiles, diff12 ++ diff21)
+    val folderDiff = FolderDiff(source, target, Seq.empty, Seq.empty, Seq.empty)
+    (sourceFileById.keySet ++ targetFileById.keySet).foldLeft(folderDiff) { case (acc, key) =>
+      (sourceFileById.get(key), targetFileById.get(key)) match {
+        case (Some(inSource), Some(inTarget)) if inSource.md5 != inTarget.md5 =>
+          acc.copy(differentContent = (inSource, inTarget) +: acc.differentContent)
+        case (Some(inSource), None) =>
+          acc.copy(missingInTarget = inSource +: acc.missingInTarget)
+        case (None, Some(inTarget)) =>
+          acc.copy(missingInSource = inTarget +: acc.missingInSource)
+        case _ =>
+          acc
+      }
+    }
   }
 
   def subFolders(folder: String, directories: Seq[DirectoryEntry]): Seq[DirectoryEntry] = {
     directories.filter(_.parent == folder)
   }
 
-  def allFilesForFolder(files: Seq[FileEntry], folder: String): Set[(String, String)] = {
-    val recursiveFiles = files.filter(_.path.startsWith(folder))
-    recursiveFiles.map(f => (f.name, f.md5)).toSet
+  def allFilesForFolder(files: Seq[FileEntry], folder: String): Seq[FileEntry] = {
+    files.filter(_.path.startsWith(folder))
+  }
+
+  def toRelativePath(file: FileEntry, inFolder: String): String = {
+    require(file.path.startsWith(inFolder))
+    file.path.substring(inFolder.length)
   }
 }
 
 object FolderComparison {
+  case class FileIdentifier(relativePath: String, md5: String)
+
   case class FolderDiff(
     source: String,
     target: String,
-    equalEntries: Set[(String, String)],
-    differentEntries: Set[(String, String)])
+    missingInTarget: Seq[FileEntry],
+    missingInSource: Seq[FileEntry],
+    differentContent: Seq[(FileEntry, FileEntry)])
+
+  //TODO remove this
+  case class FolderDiffOld(
+    source: String,
+    target: String,
+    equalEntries: Set[FileIdentifier],
+    differentEntries: Set[FileIdentifier])
 }
 
 object CompareFolders extends FolderComparison {
@@ -46,26 +75,17 @@ object CompareFolders extends FolderComparison {
     val entries = EntryPersistence.read(Constants.DefaultMetadataFile)
 
     val files = FileEntries(entries)
-    val directories = DirectoryEntries(entries)
 
-    val directFolders1 = subFolders(folder1, directories)
-    val directFolders2 = subFolders(folder2, directories)
+    val folderDiff = diffFolders(folder1, folder2, files)
 
-    println(directFolders1.map(_.name))
-    println(directFolders2.map(_.name))
-
-    val folders2ByName = directFolders2.groupBy(_.name)
-
-    directFolders1.foreach { dir1 =>
-      folders2ByName.get(dir1.name) match {
-        case Some(dir2) =>
-          val diff = diffFolders(dir1.path, dir2.head.path, files)
-          if (diff.differentEntries.isEmpty) {
-            println(s"${dir1.name} is identical")
-          }
-        case None =>
-      }
-    }
+    println(s"${folderDiff.missingInTarget.size} are in source but not in target")
+    println(folderDiff.missingInTarget.map(toRelativePath(_, folder1)).mkString("\n"))
+    println(s"\n${folderDiff.missingInSource.size} are in target but not in source")
+    println(folderDiff.missingInSource.map(toRelativePath(_, folder2)).mkString("\n"))
+    println(s"\n${folderDiff.differentContent.size} differ in content")
+    println(folderDiff.differentContent.map { case (f1, f2) =>
+      s"${toRelativePath(f1, folder1)} ${f1.modifiedTime} ${f2.modifiedTime}"
+    }.mkString("\n"))
   }
 }
 

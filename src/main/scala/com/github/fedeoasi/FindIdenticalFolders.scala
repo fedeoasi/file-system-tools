@@ -1,12 +1,12 @@
 package com.github.fedeoasi
 
 import com.github.fedeoasi.FindIdenticalFolders.findIdenticalFolders
-import com.github.fedeoasi.FolderComparison.FolderDiff
+import com.github.fedeoasi.FolderComparison.{FileIdentifier, FolderDiff, FolderDiffOld}
 import com.github.fedeoasi.Model._
 import org.apache.spark.{SparkConf, SparkContext}
 
 object FindIdenticalFolders {
-  def findIdenticalFolders(entries: Seq[FileSystemEntry]): Seq[FolderDiff] = {
+  def findIdenticalFolders(entries: Seq[FileSystemEntry]): Seq[FolderDiffOld] = {
     val conf = new SparkConf().setAppName("Find Identical Folders").setMaster("local[*]")
     val sc = new SparkContext(conf)
 
@@ -29,11 +29,11 @@ object FindIdenticalFolders {
       if (d1.path.contains(d2.path) || d2.path.contains(d1.path)) {
         None
       } else {
-        val sourceFiles = d1Files.map(f => (f.name, f.md5)).toSet
-        val targetFiles = d2Files.map(f => (f.name, f.md5)).toSet
+        val sourceFiles = d1Files.map(f => FileIdentifier(f.path.substring(d1.path.length), f.md5)).toSet
+        val targetFiles = d2Files.map(f => FileIdentifier(f.path.substring(d2.path.length), f.md5)).toSet
         val diff12 = sourceFiles.diff(targetFiles)
         val diff21 = targetFiles.diff(sourceFiles)
-        Some(FolderDiff(d1.path, d2.path, sourceFiles ++ targetFiles, diff12 ++ diff21))
+        Some(FolderDiffOld(d1.path, d2.path, sourceFiles ++ targetFiles, diff12 ++ diff21))
       }
     }
     val result = folderDiffRdd.collect().toSeq
@@ -75,7 +75,7 @@ object FindSimilarFolders {
       .reverse
       .take(50)
       .foreach { d =>
-        println(s"${d.source} is identical to ${d.target} ${d.equalEntries.size} ${d.differentEntries.size}")
+        println(s"${d.source} is similar to ${d.target} ${d.equalEntries.size} ${d.differentEntries.size}")
       }
   }
 }
