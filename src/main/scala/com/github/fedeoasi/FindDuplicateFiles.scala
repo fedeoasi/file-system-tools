@@ -30,7 +30,8 @@ object FindDuplicateFiles {
   }
 
   def main(args: Array[String]): Unit = {
-    val entries = EntryPersistence.read(Constants.DefaultMetadataFile)
+    val metadataFile = if (args.nonEmpty) args(0) else Constants.DefaultMetadataFile
+    val entries = EntryPersistence.read(metadataFile)
     findDuplicates(FileEntries(entries))
   }
 }
