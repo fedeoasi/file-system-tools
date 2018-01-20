@@ -6,19 +6,24 @@ import com.github.fedeoasi.Model.{DirectoryEntry, FileEntries, FileEntry}
 trait FolderComparison {
   def diffFolders(source: String, target: String, files: Seq[FileEntry]): FolderDiff = {
     val sourceFiles = allFilesForFolder(files, source)
+    val targetFiles = allFilesForFolder(files, target)
+    diffFolders(source, target, sourceFiles, targetFiles)
+  }
+
+  def diffFolders(source: String, target: String, sourceFiles: Seq[FileEntry], targetFiles: Seq[FileEntry]): FolderDiff = {
     val sourceFileById = sourceFiles.map { file =>
       val id = toRelativePath(file, source)
       (id, file)
     }.toMap
-    val targetFiles = allFilesForFolder(files, target)
     val targetFileById = targetFiles.map { file =>
       val id = toRelativePath(file, target)
       (id, file)
     }.toMap
-
-    val folderDiff = FolderDiff(source, target, Seq.empty, Seq.empty, Seq.empty)
+    val folderDiff = FolderDiff(source, target, Seq.empty, Seq.empty, Seq.empty, Seq.empty)
     (sourceFileById.keySet ++ targetFileById.keySet).foldLeft(folderDiff) { case (acc, key) =>
       (sourceFileById.get(key), targetFileById.get(key)) match {
+        case (Some(inSource), Some(inTarget)) if inSource.md5 == inTarget.md5 =>
+          acc.copy(equalEntries = inSource +: acc.equalEntries)
         case (Some(inSource), Some(inTarget)) if inSource.md5 != inTarget.md5 =>
           acc.copy(differentContent = (inSource, inTarget) +: acc.differentContent)
         case (Some(inSource), None) =>
@@ -51,9 +56,13 @@ object FolderComparison {
   case class FolderDiff(
     source: String,
     target: String,
+    equalEntries: Seq[FileEntry],
     missingInTarget: Seq[FileEntry],
     missingInSource: Seq[FileEntry],
-    differentContent: Seq[(FileEntry, FileEntry)])
+    differentContent: Seq[(FileEntry, FileEntry)]) {
+
+    def differentEntriesCount: Int = missingInSource.size + missingInTarget.size + differentContent.size
+  }
 
   //TODO remove this
   case class FolderDiffOld(
