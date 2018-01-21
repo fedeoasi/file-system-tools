@@ -14,7 +14,9 @@ object ExtensionsByFileCount {
     val metadataFile = if (args.nonEmpty) args(0) else Constants.DefaultMetadataFile
     val entries = EntryPersistence.read(metadataFile)
     val filesByExtension = groupByExtension(entries)
-    val countsByExtension = filesByExtension.mapValues(_.size).toSeq.sortBy(_._2).reverse
+    val countsByExtension = filesByExtension.transform { (_, files) =>
+      (files.size, files.map(_.md5).toSet.size)
+    }.toSeq.sortBy(_._2._1).reverse
     println(countsByExtension.take(50).mkString("\n"))
   }
 }
