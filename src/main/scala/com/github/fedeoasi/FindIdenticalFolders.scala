@@ -71,7 +71,7 @@ object FindSimilarFolders {
       .reverse
       .take(50)
       .foreach { d =>
-        println(s"${d.source} is similar to ${d.target} ${d.equalEntries.size} ${d.differentEntriesCount}")
+        println(s""""${d.source}" "${d.target}" ${d.equalEntries.size} ${d.differentEntriesCount}""")
       }
   }
 }
