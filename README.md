@@ -1,9 +1,9 @@
-# file-system-tools
+# File System Tools
 
 A set of command line tools to help organizing a file system. The main
 use case for this is an external hard drive or a backup folder.
 
-# Workflow
+## Workflow
 
 The main idea is that we can access the file system once and all the
 metadata into a catalog file. We can then perform some operations based
