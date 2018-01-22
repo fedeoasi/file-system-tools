@@ -11,8 +11,8 @@ object ExtensionsByFileCount {
 
   /** Ranks extensions by number of files. */
   def main(args: Array[String]): Unit = {
-    val metadataFile = if (args.nonEmpty) args(0) else Constants.DefaultMetadataFile
-    val entries = EntryPersistence.read(metadataFile)
+    val catalog = if (args.nonEmpty) args(0) else Constants.DefaultCatalogFilename
+    val entries = EntryPersistence.read(catalog)
     val filesByExtension = groupByExtension(entries)
     val countsByExtension = filesByExtension.transform { (_, files) =>
       (files.size, files.map(_.md5).toSet.size)

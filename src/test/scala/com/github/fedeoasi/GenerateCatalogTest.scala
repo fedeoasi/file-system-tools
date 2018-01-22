@@ -4,11 +4,11 @@ import java.io.File
 import java.nio.file.Paths
 import java.time.Instant
 
-import com.github.fedeoasi.GenerateMetadata.GenerateMetadataReport
+import com.github.fedeoasi.GenerateCatalog.GenerateCatalogReport
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
 import org.scalatest.{FunSpec, Matchers}
 
-class GenerateMetadataTest extends FunSpec with Matchers with TemporaryFiles {
+class GenerateCatalogTest extends FunSpec with Matchers with TemporaryFiles {
   private val folder = Paths.get("src/test/resources/root-folder")
   private val entries = Seq(
     directory("src/test/resources", "root-folder"),
@@ -17,21 +17,21 @@ class GenerateMetadataTest extends FunSpec with Matchers with TemporaryFiles {
     file("src/test/resources/root-folder/folder", "file2.txt", "cb5da54c7ac2f4da9dcdf0d9d9955179", 20)
   )
 
-  it("generates the metadata for a nested folder structure") {
-    withTmpFile("metadata", "csv") { tmpFile =>
+  it("generates the catalog for a nested folder structure") {
+    withTmpFile("catalog", "csv") { tmpFile =>
       EntryPersistence.write(Seq.empty, tmpFile)
-      val report = GenerateMetadata.generateMetadata(folder, tmpFile.toString)
-      report shouldBe GenerateMetadataReport(4L, 4L)
+      val report = GenerateCatalog.generateMetadata(folder, tmpFile.toString)
+      report shouldBe GenerateCatalogReport(4L, 4L)
       EntryPersistence.read(tmpFile) shouldBe entries
     }
   }
 
   it("reads the existing structure and does not add any entries") {
-    withTmpFile("metadata", "csv") { tmpFile =>
+    withTmpFile("catalog", "csv") { tmpFile =>
       EntryPersistence.write(Seq.empty, tmpFile)
-      GenerateMetadata.generateMetadata(folder, tmpFile.toString)
-      val report = GenerateMetadata.generateMetadata(folder, tmpFile.toString)
-      report shouldBe GenerateMetadataReport(0L, 4L)
+      GenerateCatalog.generateMetadata(folder, tmpFile.toString)
+      val report = GenerateCatalog.generateMetadata(folder, tmpFile.toString)
+      report shouldBe GenerateCatalogReport(0L, 4L)
       EntryPersistence.read(tmpFile) shouldBe entries
     }
   }

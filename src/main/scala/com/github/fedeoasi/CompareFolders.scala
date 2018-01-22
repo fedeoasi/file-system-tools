@@ -81,7 +81,7 @@ object CompareFolders extends FolderComparison {
   def main(args: Array[String]): Unit = {
     val folder1 = args(0)
     val folder2 = args(1)
-    val entries = EntryPersistence.read(Constants.DefaultMetadataFile)
+    val entries = EntryPersistence.read(Constants.DefaultCatalogFilename)
 
     val files = FileEntries(entries)
 

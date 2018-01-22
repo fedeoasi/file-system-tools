@@ -47,9 +47,9 @@ object FindIdenticalFolders extends FolderComparison {
     }
   }
 
-  /** Find identical folders present in the metadata file. */
+  /** Find identical folders present in the catalog. */
   def main(args: Array[String]): Unit = {
-    val entries = EntryPersistence.read(Constants.DefaultMetadataFile)
+    val entries = EntryPersistence.read(Constants.DefaultCatalogFilename)
     val folderDiffs = findIdenticalFolders(entries)
     folderDiffs
       .filter(d => d.differentEntriesCount == 0 && d.equalEntries.nonEmpty)
@@ -63,7 +63,7 @@ object FindIdenticalFolders extends FolderComparison {
 
 object FindSimilarFolders {
   def main(args: Array[String]): Unit = {
-    val entries = EntryPersistence.read(Constants.DefaultMetadataFile)
+    val entries = EntryPersistence.read(Constants.DefaultCatalogFilename)
     val folderDiffs = findIdenticalFolders(entries)
     folderDiffs
       .filter(d => d.equalEntries.nonEmpty && d.differentEntriesCount > 0)

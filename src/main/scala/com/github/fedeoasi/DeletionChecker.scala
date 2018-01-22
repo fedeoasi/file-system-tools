@@ -10,13 +10,13 @@ object DeletionChecker {
     entries.partition(e => new File(e.path).exists())
   }
 
-  /** Updated the metadata file performing deletions
+  /** Performs deletions on the catalog
     */
   def main(args: Array[String]): Unit = {
-    val entriesFile = Paths.get(Constants.DefaultMetadataFile)
-    val entries = EntryPersistence.read(entriesFile)
+    val catalog = Paths.get(Constants.DefaultCatalogFilename)
+    val entries = EntryPersistence.read(catalog)
     val (toKeep, toDelete) = findDeletions(entries)
     println(s"Found ${toDelete.size} entries to delete")
-    EntryPersistence.write(toKeep, entriesFile)
+    EntryPersistence.write(toKeep, catalog)
   }
 }
