@@ -24,7 +24,7 @@ incrementally update the catalog.
 ### Search
 
 - `FolderByName`: Find folders by name
-- `FoldersByFileCount`: Find the folders that contain a file type
+- `FoldersContainingExtension`: Find the folders that contain a file type
 
 ### Deduplication
 
