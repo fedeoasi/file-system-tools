@@ -20,7 +20,7 @@ class GenerateCatalogTest extends FunSpec with Matchers with TemporaryFiles {
   it("generates the catalog for a nested folder structure") {
     withTmpFile("catalog", "csv") { tmpFile =>
       EntryPersistence.write(Seq.empty, tmpFile)
-      val report = GenerateCatalog.generateMetadata(folder, tmpFile.toString)
+      val report = GenerateCatalog.generateMetadata(folder, tmpFile)
       report shouldBe GenerateCatalogReport(4L, 4L)
       EntryPersistence.read(tmpFile) shouldBe entries
     }
@@ -29,8 +29,8 @@ class GenerateCatalogTest extends FunSpec with Matchers with TemporaryFiles {
   it("reads the existing structure and does not add any entries") {
     withTmpFile("catalog", "csv") { tmpFile =>
       EntryPersistence.write(Seq.empty, tmpFile)
-      GenerateCatalog.generateMetadata(folder, tmpFile.toString)
-      val report = GenerateCatalog.generateMetadata(folder, tmpFile.toString)
+      GenerateCatalog.generateMetadata(folder, tmpFile)
+      val report = GenerateCatalog.generateMetadata(folder, tmpFile)
       report shouldBe GenerateCatalogReport(0L, 4L)
       EntryPersistence.read(tmpFile) shouldBe entries
     }

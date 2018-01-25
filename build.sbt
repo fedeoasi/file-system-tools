@@ -8,5 +8,5 @@ lazy val root = (project in file(".")).
       version      := "0.1.0-SNAPSHOT"
     )),
     name := "File System Tools",
-    libraryDependencies ++= Seq(arm, commonsCodec, commonsIo, scalaCsv, scalaTest % Test, sparkCore)
+    libraryDependencies ++= Seq(arm, commonsCodec, commonsIo, scalaCsv, scalaTest % Test, scopt, sparkCore)
   )
