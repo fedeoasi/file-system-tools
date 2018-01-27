@@ -31,10 +31,7 @@ object GenerateCatalog {
     GenerateCatalogReport(entries.size, readEntries.size)
   }
 
-  /** Generate catalog for a folder and dump it to a file (defaults to external_hard_drive.csv).
-    *
-    * @param args [FOLDER] [METADATA_FILENAME]
-    */
+  /** Generate catalog for a folder and dump it to a file (defaults to external_hard_drive.csv). */
   def main(args: Array[String]): Unit = {
     parser.parse(args, GenerateCatalogConfig()) match {
       case Some(GenerateCatalogConfig(Some(inputFolder), optionalCatalog)) =>
