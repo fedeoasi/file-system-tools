@@ -1,19 +1,42 @@
 package com.github.fedeoasi
 
+import java.nio.file.{Path, Paths}
+
 import com.github.fedeoasi.ExtensionsByFileCount.groupByExtension
+import com.github.fedeoasi.Model.{FileEntry, FileSystemEntry}
+import scopt.OptionParser
 
 object FoldersContainingExtension {
-  /** Prints folders that contain a given extension.
-    *
-    * @param args [EXTENSION]
-    */
+
+  def foldersContainingExtension(entries: Seq[FileSystemEntry], extension: String): Map[String, Seq[FileEntry]] = {
+    groupByExtension(entries).getOrElse(extension, Seq.empty).groupBy(_.parent)
+  }
+
+  case class FoldersContainingExtensionConfig(extension: Option[String] = None, catalog: Option[Path] = None)
+
+  private val parser = new OptionParser[FoldersContainingExtensionConfig](getClass.getSimpleName) {
+    head(getClass.getSimpleName)
+
+    opt[String]('e', "extension").required()
+      .action { case (extension, config) => config.copy(extension = Some(extension)) }
+      .text("The extension to search for")
+    opt[String]('c', "catalog")
+      .action { case (catalog, config) => config.copy(catalog = Some(Paths.get(catalog))) }
+      .text("The catalog file (csv)")
+
+    help("help").text("prints this usage text")
+  }
+
+  /** Prints folders that contain a given extension. */
   def main(args: Array[String]): Unit = {
-    val extension = args(0)
-    val entries = EntryPersistence.read(Constants.DefaultCatalogFilename)
-    val filesByExtension = groupByExtension(entries)
-    val filesForExtension = filesByExtension.getOrElse(extension, Seq.empty)
-    val folders = filesForExtension.groupBy(_.parent)
-    val countsByFolder = folders.mapValues(_.size)
-    println(countsByFolder.toSeq.sortBy(_._2).reverse.take(20).mkString("\n"))
+    parser.parse(args, FoldersContainingExtensionConfig()) match {
+      case Some(FoldersContainingExtensionConfig(Some(extension), optionalCatalog)) =>
+        val catalog = optionalCatalog.getOrElse(Constants.DefaultCatalogPath)
+        val entries = EntryPersistence.read(catalog)
+        val folders = foldersContainingExtension(entries, extension)
+        val countsByFolder = folders.mapValues(_.size)
+        println(countsByFolder.toSeq.sortBy(_._2).reverse.take(20).mkString("\n"))
+      case _ =>
+    }
   }
 }
