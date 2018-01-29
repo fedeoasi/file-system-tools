@@ -1,14 +1,13 @@
 package com.github.fedeoasi
 
 import java.io.File
-import java.nio.file.{Path, Paths}
+import java.nio.file.Paths
 
 import com.github.fedeoasi.Model.FileSystemEntry
+import com.github.fedeoasi.cli.CatalogConfig
 import scopt.OptionParser
 
 object DeletionChecker {
-  case class CatalogConfig(catalog: Option[Path] = None)
-
   //TODO make sure that the the parent folder exists, otherwise we will wipe out a catalog if you forgot to
   //connect your hard drive
   def findDeletions(entries: Seq[FileSystemEntry]): (Seq[FileSystemEntry], Seq[FileSystemEntry]) = {
