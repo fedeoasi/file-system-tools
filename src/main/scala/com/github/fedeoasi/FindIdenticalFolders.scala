@@ -3,9 +3,10 @@ package com.github.fedeoasi
 import com.github.fedeoasi.FindIdenticalFolders.findIdenticalFolders
 import com.github.fedeoasi.FolderComparison.FolderDiff
 import com.github.fedeoasi.Model._
+import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
 import org.apache.spark.{SparkConf, SparkContext}
 
-object FindIdenticalFolders extends FolderComparison {
+object FindIdenticalFolders extends FolderComparison with CatalogConfigParsing {
   def findIdenticalFolders(entries: Seq[FileSystemEntry]): Seq[FolderDiff] = {
     val conf = new SparkConf().setAppName("Find Identical Folders").setMaster("local[*]")
     val sc = new SparkContext(conf)
@@ -49,29 +50,37 @@ object FindIdenticalFolders extends FolderComparison {
 
   /** Find identical folders present in the catalog. */
   def main(args: Array[String]): Unit = {
-    val entries = EntryPersistence.read(Constants.DefaultCatalogFilename)
-    val folderDiffs = findIdenticalFolders(entries)
-    folderDiffs
-      .filter(d => d.differentEntriesCount == 0 && d.equalEntries.nonEmpty)
-      .sortBy(_.equalEntries.size)
-      .reverse
-      .foreach { d =>
-        println(s"${d.source} is identical to ${d.target} ${d.equalEntries.size}")
-      }
+    parser.parse(args, CatalogConfig()) match {
+      case Some(CatalogConfig(optionalCatalog)) =>
+        val entries = EntryPersistence.read(optionalCatalog.getOrElse(Constants.DefaultCatalogPath))
+        val folderDiffs = findIdenticalFolders(entries)
+        folderDiffs
+          .filter(d => d.differentEntriesCount == 0 && d.equalEntries.nonEmpty)
+          .sortBy(_.equalEntries.size)
+          .reverse
+          .foreach { d =>
+            println(s"${d.source} is identical to ${d.target} ${d.equalEntries.size}")
+          }
+      case _ =>
+    }
   }
 }
 
-object FindSimilarFolders {
+object FindSimilarFolders extends CatalogConfigParsing {
   def main(args: Array[String]): Unit = {
-    val entries = EntryPersistence.read(Constants.DefaultCatalogFilename)
-    val folderDiffs = findIdenticalFolders(entries)
-    folderDiffs
-      .filter(d => d.equalEntries.nonEmpty && d.differentEntriesCount > 0)
-      .sortBy(d => d.equalEntries.size - d.differentEntriesCount)
-      .reverse
-      .take(50)
-      .foreach { d =>
-        println(s""""${d.source}" "${d.target}" ${d.equalEntries.size} ${d.differentEntriesCount}""")
-      }
+    parser.parse(args, CatalogConfig()) match {
+      case Some(CatalogConfig(optionalCatalog)) =>
+        val entries = EntryPersistence.read(optionalCatalog.getOrElse(Constants.DefaultCatalogPath))
+        val folderDiffs = findIdenticalFolders(entries)
+        folderDiffs
+          .filter(d => d.equalEntries.nonEmpty && d.differentEntriesCount > 0)
+          .sortBy(d => d.equalEntries.size - d.differentEntriesCount)
+          .reverse
+          .take(50)
+          .foreach { d =>
+            println(s""""${d.source}" "${d.target}" ${d.equalEntries.size} ${d.differentEntriesCount}""")
+          }
+      case _ =>
+    }
   }
 }
