@@ -1,8 +1,13 @@
 package com.github.fedeoasi
 
-import com.github.fedeoasi.Model.{FileSystemEntry, FileEntries, FileEntry}
+import java.nio.file.Paths
+
+import com.github.fedeoasi.Model.{FileEntries, FileEntry, FileSystemEntry}
+import com.github.fedeoasi.cli.CatalogConfig
+import scopt.OptionParser
 
 object FindDuplicateFiles {
+  //TODO Make this return a nice report case class instead of Unit
   def findDuplicates(entries: Seq[FileSystemEntry]): Unit = {
     val files = entries.collect { case f: FileEntry if f.md5.nonEmpty => f }
     println(files.size)
@@ -29,9 +34,23 @@ object FindDuplicateFiles {
     println(foldersAndDuplicateCounts.mkString("\n"))
   }
 
+  private val parser = new OptionParser[CatalogConfig](getClass.getSimpleName) {
+    head(getClass.getSimpleName)
+
+    opt[String]('c', "catalog")
+      .action { case (catalog, config) => config.copy(catalog = Some(Paths.get(catalog))) }
+      .text("The catalog file (csv)")
+
+    help("help").text("prints this usage text")
+  }
+
   def main(args: Array[String]): Unit = {
-    val catalog = if (args.nonEmpty) args(0) else Constants.DefaultCatalogFilename
-    val entries = EntryPersistence.read(catalog)
-    findDuplicates(FileEntries(entries))
+    parser.parse(args, CatalogConfig()) match {
+      case Some(CatalogConfig(optionalCatalog)) =>
+        val catalog = optionalCatalog.getOrElse(Constants.DefaultCatalogPath)
+        val files = FileEntries(EntryPersistence.read(catalog))
+        findDuplicates(files)
+      case _ =>
+    }
   }
 }
