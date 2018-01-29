@@ -1,9 +1,10 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.apple
 
 import java.nio.file.{Files, Paths, StandardCopyOption}
 import java.time.{LocalDateTime, ZoneOffset}
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry}
+import com.github.fedeoasi.{EntryPersistence, ExtensionsByFileCount}
 
 object RecoverApplePhotosLibrary {
   def photos(files: Seq[FileEntry]): Seq[FileEntry] = {
