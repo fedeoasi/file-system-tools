@@ -6,6 +6,7 @@ import java.time.{LocalDateTime, ZoneOffset}
 import com.github.fedeoasi.Model.{FileEntries, FileEntry}
 import com.github.fedeoasi.{EntryPersistence, ExtensionsByFileCount}
 
+//TODO Proper command line app
 object RecoverApplePhotosLibrary {
   def photos(files: Seq[FileEntry]): Seq[FileEntry] = {
     val imageFiles = files.filter(_.extension.exists(_.equalsIgnoreCase("png")))
