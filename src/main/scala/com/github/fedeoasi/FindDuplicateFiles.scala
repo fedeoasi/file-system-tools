@@ -21,19 +21,23 @@ object FindDuplicateFiles {
 
     val allDuplicates = duplicatesByMd5.mapValues(_.head).values.toSeq
     val duplicatesBySize = allDuplicates.sortBy(_.size).reverse
-    val topK = duplicatesBySize.take(20)
+    val k = 25
+    println(s"There are ${duplicatesBySize.size} duplicate files. Showing the largest $k")
+    val topK = duplicatesBySize.take(k)
 
     println(topK.mkString("\n"))
 
     println()
 
-
     val duplicateCountByFolder = duplicatesByMd5.values.toSeq.flatten.groupBy(_.parent).transform {
       case (_, filesForFolder) =>
         filesForFolder.size
     }
-    val foldersAndDuplicateCounts = duplicateCountByFolder.toSeq.sortBy(_._2).reverse.take(20)
-    println(foldersAndDuplicateCounts.mkString("\n"))
+
+    val folders = duplicateCountByFolder.toSeq.sortBy(_._2).reverse
+    println(s"There are ${folders.size} folders containing duplicate files. Showing the $k containing the most files")
+    val topKFolders = folders.take(k)
+    println(topKFolders.mkString("\n"))
   }
 
   private val parser = new OptionParser[FundDuplicateFilesConfig](getClass.getSimpleName) {
