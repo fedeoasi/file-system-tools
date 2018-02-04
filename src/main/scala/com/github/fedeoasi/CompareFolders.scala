@@ -87,6 +87,7 @@ object CompareFolders extends FolderComparison {
 
     val folderDiff = diffFolders(folder1, folder2, files)
 
+    println(s"${folderDiff.equalEntries.size} are equal in the two folders\n")
     println(s"${folderDiff.missingInTarget.size} are in source but not in target")
     println(folderDiff.missingInTarget.map(toRelativePath(_, folder1)).mkString("\n"))
     println(s"\n${folderDiff.missingInSource.size} are in target but not in source")
