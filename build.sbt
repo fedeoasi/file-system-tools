@@ -1,7 +1,7 @@
 import Dependencies._
 
-lazy val root = (project in file(".")).
-  settings(
+lazy val root = (project in file("."))
+  .settings(
     inThisBuild(List(
       organization := "com.github.fedeoasi",
       scalaVersion := "2.11.12",
@@ -9,4 +9,4 @@ lazy val root = (project in file(".")).
     )),
     name := "File System Tools",
     libraryDependencies ++= Seq(arm, commonsCodec, commonsIo, scalaCsv, scalaTest % Test, scopt, sparkCore)
-  )
+  ).enablePlugins(JavaAppPackaging)
