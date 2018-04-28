@@ -29,8 +29,7 @@ object FolderByName {
   /** Finds a folder by name (case insensitive) */
   def main(args: Array[String]): Unit = {
     parser.parse(args, FolderByNameConfig()) match {
-      case Some(FolderByNameConfig(Some(folderName), optionalCatalog)) =>
-        val catalog = optionalCatalog.getOrElse(Constants.DefaultCatalogPath)
+      case Some(FolderByNameConfig(Some(folderName), Some(catalog))) =>
         val entries = EntryPersistence.read(catalog)
         val matchedFolders = findFoldersByName(folderName, entries)
         println(matchedFolders.mkString("\n"))

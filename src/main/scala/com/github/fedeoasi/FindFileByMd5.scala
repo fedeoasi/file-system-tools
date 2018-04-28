@@ -26,8 +26,7 @@ object FindFileByMd5 {
 
   def main(args: Array[String]): Unit = {
     parser.parse(args, FindFileByMd5Config()) match {
-      case Some(FindFileByMd5Config(optionalCatalog, Some(md5))) =>
-        val catalog = optionalCatalog.getOrElse(Constants.DefaultCatalogPath)
+      case Some(FindFileByMd5Config(Some(catalog), Some(md5))) =>
         val files = FileEntries(EntryPersistence.read(catalog))
         val filteredFiles = files.filter(_.md5 == md5)
         println(filteredFiles.mkString("\n"))

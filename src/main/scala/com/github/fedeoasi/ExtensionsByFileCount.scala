@@ -11,7 +11,7 @@ object ExtensionsByFileCount {
 
   /** Ranks extensions by number of files. */
   def main(args: Array[String]): Unit = {
-    val catalog = if (args.nonEmpty) args(0) else Constants.DefaultCatalogFilename
+    val catalog = args(0)
     val entries = EntryPersistence.read(catalog)
     val filesByExtension = groupByExtension(entries)
     val countsByExtension = filesByExtension.transform { (_, files) =>

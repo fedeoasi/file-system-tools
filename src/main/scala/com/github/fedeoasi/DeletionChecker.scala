@@ -33,8 +33,7 @@ object DeletionChecker {
     */
   def main(args: Array[String]): Unit = {
     parser.parse(args, DeletionCheckerConfig()) match {
-      case Some(DeletionCheckerConfig(optionalCatalog, optionalFolder)) =>
-        val catalog = optionalCatalog.getOrElse(Constants.DefaultCatalogPath)
+      case Some(DeletionCheckerConfig(Some(catalog), optionalFolder)) =>
         val entries = EntryPersistence.read(catalog)
         val (toCheck, toKeepWithoutCheck) = optionalFolder match {
           case Some(folder) =>

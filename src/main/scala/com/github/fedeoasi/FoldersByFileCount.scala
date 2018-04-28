@@ -34,11 +34,12 @@ object FoldersByFileCount {
 
   /** Ranks folders by file counts using the given folder as root.
     *
-    * @param args [FOLDER]
+    * @param args [CATALOG] [FOLDER]
     */
   def main(args: Array[String]): Unit = {
-    val folder = args(0)
-    val entries = EntryPersistence.read(Constants.DefaultCatalogFilename)
+    val catalog = args(0)
+    val folder = args(1)
+    val entries = EntryPersistence.read(catalog)
 
     val entriesByParent = entries.groupBy(_.parent)
 

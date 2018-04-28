@@ -6,11 +6,12 @@ object FindDuplicateFilesForFolder {
   /** Given a source folder lists the files that are duplicated and prints
     * the locations of the duplicates.
     *
-    * @param args [FOLDER]
+    * @param args [CATALOG] [FOLDER]
     */
   def main(args: Array[String]): Unit = {
-    val folder = args(0)
-    val entries = EntryPersistence.read(Constants.DefaultCatalogFilename)
+    val catalog = args(0)
+    val folder = args(1)
+    val entries = EntryPersistence.read(catalog)
     val files = FileEntries(entries)
 //    val filesByParent = files.groupBy(_.parent)
     val filesByMd5 = files.groupBy(_.md5)

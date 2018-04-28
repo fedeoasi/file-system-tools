@@ -34,8 +34,8 @@ object GenerateCatalog {
   /** Generate catalog for a folder and dump it to a file (defaults to external_hard_drive.csv). */
   def main(args: Array[String]): Unit = {
     parser.parse(args, GenerateCatalogConfig()) match {
-      case Some(GenerateCatalogConfig(Some(inputFolder), optionalCatalog)) =>
-        val report = generateMetadata(inputFolder, optionalCatalog.getOrElse(Constants.DefaultCatalogPath))
+      case Some(GenerateCatalogConfig(Some(inputFolder), Some(catalog))) =>
+        val report = generateMetadata(inputFolder, catalog)
         println(s"Added: ${report.added} Total: ${report.total}")
       case _ =>
     }

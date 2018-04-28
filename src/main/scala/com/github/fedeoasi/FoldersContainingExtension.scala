@@ -30,8 +30,7 @@ object FoldersContainingExtension {
   /** Prints folders that contain a given extension. */
   def main(args: Array[String]): Unit = {
     parser.parse(args, FoldersContainingExtensionConfig()) match {
-      case Some(FoldersContainingExtensionConfig(Some(extension), optionalCatalog)) =>
-        val catalog = optionalCatalog.getOrElse(Constants.DefaultCatalogPath)
+      case Some(FoldersContainingExtensionConfig(Some(extension), Some(catalog))) =>
         val entries = EntryPersistence.read(catalog)
         val folders = foldersContainingExtension(entries, extension)
         val countsByFolder = folders.mapValues(_.size)

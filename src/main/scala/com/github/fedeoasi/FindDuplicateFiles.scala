@@ -56,8 +56,7 @@ object FindDuplicateFiles {
 
   def main(args: Array[String]): Unit = {
     parser.parse(args, FundDuplicateFilesConfig()) match {
-      case Some(FundDuplicateFilesConfig(optionalCatalog, optionalExtension)) =>
-        val catalog = optionalCatalog.getOrElse(Constants.DefaultCatalogPath)
+      case Some(FundDuplicateFilesConfig(Some(catalog), optionalExtension)) =>
         val files = FileEntries(EntryPersistence.read(catalog))
         val filteredFiles = optionalExtension match {
           case Some(extension) => files.filter(_.extension.exists(_.equalsIgnoreCase(extension)))

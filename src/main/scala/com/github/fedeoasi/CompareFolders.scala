@@ -76,12 +76,13 @@ object CompareFolders extends FolderComparison {
   /** Compare folders based on the contents of the contained folders
     * and files.
     *
-    * @param args [FOLDER_1] [FOLDER_2]
+    * @param args [CATALOG] [FOLDER_1] [FOLDER_2]
     */
   def main(args: Array[String]): Unit = {
-    val folder1 = args(0)
-    val folder2 = args(1)
-    val entries = EntryPersistence.read(Constants.DefaultCatalogFilename)
+    val catalog = args(0)
+    val folder1 = args(1)
+    val folder2 = args(2)
+    val entries = EntryPersistence.read(catalog)
 
     val files = FileEntries(entries)
 

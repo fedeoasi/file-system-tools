@@ -51,8 +51,8 @@ object FindIdenticalFolders extends FolderComparison with CatalogConfigParsing {
   /** Find identical folders present in the catalog. */
   def main(args: Array[String]): Unit = {
     parser.parse(args, CatalogConfig()) match {
-      case Some(CatalogConfig(optionalCatalog)) =>
-        val entries = EntryPersistence.read(optionalCatalog.getOrElse(Constants.DefaultCatalogPath))
+      case Some(CatalogConfig(Some(catalog))) =>
+        val entries = EntryPersistence.read(catalog)
         val folderDiffs = findIdenticalFolders(entries)
         folderDiffs
           .filter(d => d.differentEntriesCount == 0 && d.equalEntries.nonEmpty)
@@ -69,8 +69,8 @@ object FindIdenticalFolders extends FolderComparison with CatalogConfigParsing {
 object FindSimilarFolders extends CatalogConfigParsing {
   def main(args: Array[String]): Unit = {
     parser.parse(args, CatalogConfig()) match {
-      case Some(CatalogConfig(optionalCatalog)) =>
-        val entries = EntryPersistence.read(optionalCatalog.getOrElse(Constants.DefaultCatalogPath))
+      case Some(CatalogConfig(Some(catalog))) =>
+        val entries = EntryPersistence.read(catalog)
         val folderDiffs = findIdenticalFolders(entries)
         folderDiffs
           .filter(d => d.equalEntries.nonEmpty && d.differentEntriesCount > 0)
