@@ -1,5 +1,7 @@
 package com.github.fedeoasi
 
+import java.text.NumberFormat
+
 import com.github.fedeoasi.Model.FileEntries
 
 object FilesBySize {
@@ -18,6 +20,6 @@ object TotalSize {
     val catalog = args(0)
     val entries = EntryPersistence.read(catalog)
     val totalSize = FileEntries(entries).map(_.size).sum
-    println(s"The total size in bytes is $totalSize")
+    println(s"The total size in bytes is ${NumberFormat.getIntegerInstance.format(totalSize)}")
   }
 }
