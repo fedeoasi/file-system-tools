@@ -40,4 +40,23 @@ incrementally update the catalog.
 - `TotalSize`: Compute the total size of the files in the catalog
 - `ExtensionsByFileCount`: Find the most common extensions
 
+## Scala Native Package
 
+To build a Scala Native package, run:
+
+```
+sbt universal:packageBin
+```
+
+This will generate a zip file under `target/universal`, which you can extract anywhere and run the commands:
+
+```
+cd target/universal
+unzip file-system-tools-*.zip
+cd file-system-tools-*
+./bin/generate-catalog --help
+```
+
+You can also [generate other kinds of packages](https://www.scala-sbt.org/sbt-native-packager/gettingstarted.html#create-a-package).
+
+NOTE: You may have to set `JAVA_HOME` appropriately for the shell scripts to work.
