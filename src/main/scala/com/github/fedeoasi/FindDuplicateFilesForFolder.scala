@@ -1,10 +1,12 @@
 package com.github.fedeoasi
 
+import java.io.File
+
 import com.github.fedeoasi.Model.FileEntries
 
 object FindDuplicateFilesForFolder {
   /** Given a source folder lists the files that are duplicated and prints
-    * the locations of the duplicates if they are not under the given input folder.
+    * the locations of the duplicates that are not under the given input folder.
     *
     * @param args [CATALOG] [FOLDER]
     */
@@ -30,8 +32,8 @@ object FindDuplicateFilesForFolder {
 }
 
 object FindDuplicateFilesWithinFolder {
-  /** Given a source folder lists the files that are duplicated and prints
-    * the locations of the duplicates under the given input folder.
+  /** Given a source folder lists the files that are duplicated under the given folder and prints
+    * the locations of the duplicates.
     *
     * @param args [CATALOG] [FOLDER]
     */
@@ -47,11 +49,38 @@ object FindDuplicateFilesWithinFolder {
 
     val filesToDelete = duplicatedFilesByMd5.flatMap { case (_, filesForMd5) =>
       val canonicalFile = filesForMd5.minBy(_.name)
-      println(canonicalFile.path)
       filesForMd5.filterNot(_.name == canonicalFile.name)
     }
-    println("Delete these:")
-    filesToDelete.foreach(f => println(f.path))
-    //filesToDelete.foreach(f => new File(f.path).delete())
+    filesToDelete.foreach { f =>
+      println(f.path)
+      new File(f.path).delete()
+    }
+  }
+}
+
+object FindDuplicateFilesWithinSecondaryFolder {
+  /** Given a source folder lists the files that are duplicated and prints
+    * the locations of the duplicates under the given input folder.
+    *
+    * @param args [CATALOG] [PRIMARY_FOLDER] [SECONDARY_FOLDER]
+    */
+  def main(args: Array[String]): Unit = {
+    val catalog = args(0)
+    val primaryFolder = args(1)
+    val secondaryFolder = args(2)
+    require(primaryFolder != secondaryFolder, "Primary and secondary folder must be different")
+    val entries = EntryPersistence.read(catalog)
+    val files = FileEntries(entries)
+
+    val primaryFiles = files.filter(_.parent == primaryFolder)
+    val secondaryFiles = files.filter(_.parent == secondaryFolder)
+
+    val primaryFilesByMd5 = primaryFiles.groupBy(_.md5)
+
+    secondaryFiles.foreach { secondaryFile =>
+      if (primaryFilesByMd5.contains(secondaryFile.md5)) {
+        println(secondaryFile.path)
+      }
+    }
   }
 }
