@@ -15,7 +15,7 @@ object Model {
   case class FileEntry(
     parent: String,
     name: String,
-    md5: String,
+    md5: Option[String],
     size: Long,
     modifiedTime: Instant) extends FileSystemEntry {
 

@@ -14,7 +14,7 @@ import scala.util.{Failure, Success, Try}
   *
   * Supports incremental walks by taking the `existingEntries` parameter.
   */
-class FileSystemWalk(directory: Path, existingEntries: Seq[FileSystemEntry] = Seq.empty) {
+class FileSystemWalk(directory: Path, existingEntries: Seq[FileSystemEntry] = Seq.empty, populateMd5: Boolean = true) {
   require(directory.toFile.isDirectory)
 
   private val entriesByPath = existingEntries.groupBy(_.path)
@@ -48,12 +48,14 @@ class FileSystemWalk(directory: Path, existingEntries: Seq[FileSystemEntry] = Se
   }
 
   private def createFile(file: File): Option[FileEntry] = {
-    println(file.getPath)
     Try {
-      managed(new FileInputStream(file)).acquireAndGet { fis =>
-        val md5 = DigestUtils.md5Hex(fis)
-        FileEntry(file.getParent, file.getName, md5, file.length(), Instant.ofEpochMilli(file.lastModified()))
+      val md5 = if (populateMd5) {
+        println(file.getPath)
+        managed(new FileInputStream(file)).acquireAndGet { fis => Some(DigestUtils.md5Hex(fis))}
+      } else {
+        None
       }
+      FileEntry(file.getParent, file.getName, md5, file.length(), Instant.ofEpochMilli(file.lastModified()))
     } match {
       case Success(fileEntry) => Some(fileEntry)
       case Failure(_) =>

@@ -25,7 +25,10 @@ object EntryPersistence {
       reader.allWithHeaders().map { row =>
         val modifiedTime = Instant.ofEpochMilli(row(ModifiedTimeField).toLong)
         row(EntryTypeField) match {
-          case "F" => FileEntry(row(ParentField), row(NameField), row(Md5Field), row(SizeField).toLong, modifiedTime)
+          case "F" =>
+            val md5Value = row(Md5Field)
+            val md5 = if (md5Value.nonEmpty) Some(md5Value) else None
+            FileEntry(row(ParentField), row(NameField), md5, row(SizeField).toLong, modifiedTime)
           case "D" => DirectoryEntry(row(ParentField), row(NameField), modifiedTime)
           case other => throw new RuntimeException(s"Unrecognized entry type $other")
         }
@@ -43,7 +46,7 @@ object EntryPersistence {
   private def toCsvSeq(entries: Seq[FileSystemEntry]): Seq[Seq[Any]] = {
     entries.map {
         case FileEntry(parent, name, md5, size, modifiedTime) =>
-          Seq("F", parent, name, md5, size, modifiedTime.toEpochMilli)
+          Seq("F", parent, name, md5.getOrElse(""), size, modifiedTime.toEpochMilli)
         case DirectoryEntry(parent, name, modifiedTime) =>
           Seq("D", parent, name, "", "", modifiedTime.toEpochMilli)
     }

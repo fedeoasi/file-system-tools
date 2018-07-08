@@ -22,9 +22,9 @@ trait FolderComparison {
     val folderDiff = FolderDiff(source, target, Seq.empty, Seq.empty, Seq.empty, Seq.empty)
     (sourceFileById.keySet ++ targetFileById.keySet).foldLeft(folderDiff) { case (acc, key) =>
       (sourceFileById.get(key), targetFileById.get(key)) match {
-        case (Some(inSource), Some(inTarget)) if inSource.md5 == inTarget.md5 =>
+        case (Some(inSource), Some(inTarget)) if sameMd5(inSource, inTarget) =>
           acc.copy(equalEntries = inSource +: acc.equalEntries)
-        case (Some(inSource), Some(inTarget)) if inSource.md5 != inTarget.md5 =>
+        case (Some(inSource), Some(inTarget)) if !sameMd5(inSource, inTarget) =>
           acc.copy(differentContent = (inSource, inTarget) +: acc.differentContent)
         case (Some(inSource), None) =>
           acc.copy(missingInTarget = inSource +: acc.missingInTarget)
@@ -33,6 +33,13 @@ trait FolderComparison {
         case _ =>
           acc
       }
+    }
+  }
+
+  def sameMd5(source: FileEntry, target: FileEntry): Boolean = {
+    (source.md5, target.md5) match {
+      case (Some(sourceMd5), Some(targetMd5)) if sourceMd5 == targetMd5 => true
+      case _ => false
     }
   }
 
