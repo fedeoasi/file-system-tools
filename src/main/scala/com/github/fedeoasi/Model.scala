@@ -7,7 +7,10 @@ object Model {
     def parent: String
     def name: String
     def modifiedTime: Instant
-    def path: String = parent + java.io.File.separator + name
+    def path: String = {
+      val separator = if (!parent.endsWith(java.io.File.separator)) java.io.File.separator else ""
+      parent + separator + name
+    }
   }
 
   case class DirectoryEntry(parent: String, name: String, modifiedTime: Instant) extends FileSystemEntry

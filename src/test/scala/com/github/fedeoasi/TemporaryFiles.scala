@@ -1,14 +1,26 @@
 package com.github.fedeoasi
 
 import java.nio.file.{Files, Path}
+import java.util.UUID
 
 trait TemporaryFiles {
-  def withTmpFile[T](prefix: String, suffix: String)(f: Path => T): T = {
-    val tmpFile = Files.createTempFile(prefix, suffix)
+  def withTempDir[T](prefix: String)(f: Path => T): T = {
+    val tempDir = Files.createTempDirectory(prefix)
     try {
-      f(tmpFile)
+      f(tempDir)
     } finally {
-      tmpFile.toFile.delete()
+      tempDir.toFile.delete()
     }
   }
+
+  def withTmpFile[T](prefix: String, suffix: String)(f: Path => T): T = {
+    val tempFile = Files.createTempFile(prefix, suffix)
+    try {
+      f(tempFile)
+    } finally {
+      tempFile.toFile.delete()
+    }
+  }
+
+  def generateCatalogFilename(): String = s"${UUID.randomUUID()}.csv"
 }
