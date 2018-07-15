@@ -65,7 +65,7 @@ class EntryReader(catalog: Path) {
   private def csvReader: CSVReader = CSVReader.open(catalog.toFile)
 }
 
-class EntryIndex(val filesByDir: Map[String, Seq[String]])
+
 
 object Entries {
   val header = Seq(EntryTypeField, ParentField, NameField, Md5Field, SizeField, ModifiedTimeField)
