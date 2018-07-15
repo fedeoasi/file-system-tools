@@ -1,7 +1,9 @@
 package com.github.fedeoasi
 
 import java.nio.file.{Path, Paths}
+import java.util.function.Consumer
 
+import com.github.fedeoasi.Model.FileSystemEntry
 import scopt.OptionParser
 
 object GenerateCatalog {
@@ -29,11 +31,25 @@ object GenerateCatalog {
 
   def generateMetadata(inputFolder: Path, catalogFile: Path, populateMd5: Boolean): GenerateCatalogReport = {
     val entriesFileExists = catalogFile.toFile.exists()
-    val existingEntries = if (entriesFileExists) EntryPersistence.read(catalogFile) else Seq.empty
-    val entries = new FileSystemWalk(inputFolder, existingEntries, populateMd5).run()
-    EntryPersistence.write(entries, catalogFile, entriesFileExists)
-    val readEntries = EntryPersistence.read(catalogFile)
-    GenerateCatalogReport(entries.size, readEntries.size)
+    val existingEntryIndex = if (entriesFileExists) new EntryReader(catalogFile).readIndex() else new EntryIndex(Map.empty)
+
+    val entryWriterConsumer = new EntryWriterConsumer(catalogFile)
+
+    new FileSystemWalk(inputFolder, existingEntryIndex, populateMd5).traverse(entryWriterConsumer)
+    val readEntries = new EntryReader(catalogFile).count()
+    GenerateCatalogReport(entryWriterConsumer.entriesCount, readEntries)
+  }
+
+  class EntryWriterConsumer(catalogPath: Path) extends Consumer[FileSystemEntry] {
+    private var _entriesCount = 0
+    private val writer = new EntryWriter(catalogPath)
+
+    override def accept(t: FileSystemEntry): Unit = {
+      _entriesCount += 1
+      writer.write(t)
+    }
+
+    def entriesCount: Int = _entriesCount
   }
 
   /** Generate catalog for a folder and dump it to a file (defaults to external_hard_drive.csv). */
