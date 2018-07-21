@@ -1,7 +1,7 @@
 package com.github.fedeoasi
 
 import java.io.{File, FileInputStream}
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 import java.time.Instant
 import java.util.function.Consumer
 
@@ -9,38 +9,17 @@ import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry, FileSystemEntry}
 import org.apache.commons.codec.digest.DigestUtils
 import resource.managed
 
-import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
 /** Walks the file system tree and exposes all new entries one by one to a `Consumer`.
   *
-  * Supports incremental walks by taking the `existingEntries` parameter.
+  * Supports incremental walks by using an index of existing entries supplied as `existingEntryIndex` parameter.
   */
 class FileSystemWalk(directory: Path, existingEntryIndex: EntryIndex, populateMd5: Boolean = true) {
   require(directory.toFile.isDirectory)
 
   def traverse(consumer: Consumer[FileSystemEntry]): Unit = {
-    traverse(directory.toFile, consumer)
-  }
-
-  def traverse(file: File, consumer: Consumer[FileSystemEntry]): Unit = {
-    val stack = new mutable.Stack[File]()
-    stack.push(file)
-    while (stack.nonEmpty) {
-      val curr = stack.pop()
-      if (curr.isDirectory) {
-        if (!existingEntryIndex.contains(curr.getPath)) {
-          consumer.accept(createDirectory(curr))
-        }
-        curr.listFiles().foreach { n =>
-          stack.push(n)
-        }
-      } else {
-        if (!existingEntryIndex.contains(curr.getPath)) {
-          createFile(curr).foreach(consumer.accept)
-        }
-      }
-    }
+    Files.walk(directory).forEach(new PathConsumer(consumer))
   }
 
   private def createDirectory(file: File): DirectoryEntry = {
@@ -61,6 +40,18 @@ class FileSystemWalk(directory: Path, existingEntryIndex: EntryIndex, populateMd
       case Failure(_) =>
         println(s"Error processing file ${file.getPath}" )
         None
+    }
+  }
+
+  private class PathConsumer(entryConsumer: Consumer[FileSystemEntry]) extends Consumer[Path] {
+    override def accept(path: Path): Unit = {
+      if (!existingEntryIndex.contains(path.toFile.getPath)) {
+        if (path.toFile.isDirectory) {
+          entryConsumer.accept(createDirectory(path.toFile))
+        } else {
+          createFile(path.toFile).foreach(entryConsumer.accept)
+        }
+      }
     }
   }
 }
