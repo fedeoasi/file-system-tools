@@ -1,8 +1,9 @@
 package com.github.fedeoasi
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry, FileSystemEntry}
+import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
 
-object ExtensionsByFileCount {
+object ExtensionsByFileCount extends CatalogConfigParsing {
   def groupByExtension(entries: Seq[FileSystemEntry]): Map[String, Seq[FileEntry]] = {
     val files = FileEntries(entries)
     val filesAndExtensions = files.collect { case f if f.extension.isDefined => (f, f.extension.get.toLowerCase) }
@@ -11,13 +12,16 @@ object ExtensionsByFileCount {
 
   /** Ranks extensions by number of files. */
   def main(args: Array[String]): Unit = {
-    val catalog = args(0)
-    val entries = EntryPersistence.read(catalog)
-    val filesByExtension = groupByExtension(entries)
-    val countsByExtension = filesByExtension.transform { (_, files) =>
-      (files.size, files.map(_.md5).toSet.size)
-    }.toSeq.sortBy(_._2._1).reverse
-    println(countsByExtension.take(50).mkString("\n"))
+    parser.parse(args, CatalogConfig()) match {
+      case Some(CatalogConfig(Some(catalog))) =>
+        val entries = EntryPersistence.read(catalog)
+        val filesByExtension = groupByExtension(entries)
+        val countsByExtension = filesByExtension.transform { (_, files) =>
+          (files.size, files.map(_.md5).toSet.size)
+        }.toSeq
+        println(new TopKFinder(countsByExtension).top(20)(Ordering.by(_._2._1)).mkString("\n"))
+      case _ =>
+    }
   }
 }
 

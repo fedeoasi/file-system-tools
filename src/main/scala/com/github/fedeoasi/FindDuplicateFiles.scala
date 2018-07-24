@@ -20,13 +20,9 @@ object FindDuplicateFiles {
     }
 
     val allDuplicates = duplicatesByMd5.mapValues(_.head).values.toSeq
-    val duplicatesBySize = allDuplicates.sortBy(_.size).reverse
     val k = 25
-    println(s"There are ${duplicatesBySize.size} duplicate files. Showing the largest $k")
-    val topK = duplicatesBySize.take(k)
-
+    val topK = new TopKFinder(allDuplicates).top(k)(Ordering.by(_.size))
     println(topK.mkString("\n"))
-
     println()
 
     val duplicateCountByFolder = duplicatesByMd5.values.toSeq.flatten.groupBy(_.parent).transform {
@@ -34,8 +30,7 @@ object FindDuplicateFiles {
         filesForFolder.size
     }
 
-    val folders = duplicateCountByFolder.toSeq.sortBy(_._2).reverse
-    println(s"There are ${folders.size} folders containing duplicate files. Showing the $k containing the most files")
+    val folders = new TopKFinder(duplicateCountByFolder.toSeq).top(k)
     val topKFolders = folders.take(k)
     println(topKFolders.mkString("\n"))
   }

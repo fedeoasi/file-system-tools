@@ -2,7 +2,7 @@ package com.github.fedeoasi
 
 import java.text.NumberFormat
 
-import com.github.fedeoasi.Model.FileEntries
+import com.github.fedeoasi.Model.{FileEntries, FileEntry}
 import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
 
 object FilesBySize extends CatalogConfigParsing {
@@ -12,7 +12,7 @@ object FilesBySize extends CatalogConfigParsing {
       case Some(CatalogConfig(Some(catalog))) =>
         val entries = EntryPersistence.read(catalog)
         val files = FileEntries(entries)
-        val largestFiles = files.sortBy(_.size).reverse.take(50)
+        val largestFiles = new TopKFinder(files).top(20)(Ordering.by[FileEntry, Long](_.size))
         println(largestFiles.mkString("\n"))
       case _ =>
     }
