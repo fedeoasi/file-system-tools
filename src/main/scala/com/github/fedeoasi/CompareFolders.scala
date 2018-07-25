@@ -2,6 +2,7 @@ package com.github.fedeoasi
 
 import com.github.fedeoasi.FolderComparison.FolderDiff
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntries, FileEntry}
+import wvlet.log.LogSupport
 
 trait FolderComparison {
   def diffFolders(source: String, target: String, files: Seq[FileEntry]): FolderDiff = {
@@ -79,7 +80,7 @@ object FolderComparison {
     differentEntries: Set[FileIdentifier])
 }
 
-object CompareFolders extends FolderComparison {
+object CompareFolders extends FolderComparison with LogSupport {
   /** Compare folders based on the contents of the contained folders
     * and files.
     *
@@ -95,13 +96,13 @@ object CompareFolders extends FolderComparison {
 
     val folderDiff = diffFolders(folder1, folder2, files)
 
-    println(s"${folderDiff.equalEntries.size} are equal in the two folders\n")
-    println(s"${folderDiff.missingInTarget.size} are in source but not in target")
-    println(folderDiff.missingInTarget.map(toRelativePath(_, folder1)).mkString("\n"))
-    println(s"\n${folderDiff.missingInSource.size} are in target but not in source")
-    println(folderDiff.missingInSource.map(toRelativePath(_, folder2)).mkString("\n"))
-    println(s"\n${folderDiff.differentContent.size} differ in content")
-    println(folderDiff.differentContent.map { case (f1, f2) =>
+    info(s"${folderDiff.equalEntries.size} are equal in the two folders\n")
+    info(s"${folderDiff.missingInTarget.size} are in source but not in target")
+    info(folderDiff.missingInTarget.map(toRelativePath(_, folder1)).mkString("\n"))
+    info(s"\n${folderDiff.missingInSource.size} are in target but not in source")
+    info(folderDiff.missingInSource.map(toRelativePath(_, folder2)).mkString("\n"))
+    info(s"\n${folderDiff.differentContent.size} differ in content")
+    info(folderDiff.differentContent.map { case (f1, f2) =>
       s"${toRelativePath(f1, folder1)} ${f1.modifiedTime} ${f2.modifiedTime}"
     }.mkString("\n"))
   }

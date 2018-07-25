@@ -4,17 +4,17 @@ import java.nio.file.{Files, Paths, StandardCopyOption}
 import java.time.{LocalDateTime, ZoneOffset}
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry}
-import com.github.fedeoasi.{EntryPersistence, ExtensionsByFileCount}
+import com.github.fedeoasi.{EntryPersistence, ExtensionsByFileCount, Logging}
 
 //TODO Proper command line app
-object RecoverApplePhotosLibrary {
+object RecoverApplePhotosLibrary extends Logging {
   def photos(files: Seq[FileEntry]): Seq[FileEntry] = {
     val imageFiles = files.filter(_.extension.exists(_.equalsIgnoreCase("png")))
     val data = imageFiles.filter(_.path.contains("/Data/"))
     val masters = imageFiles.filter(_.path.contains("/Masters/"))
     val thumbnails = imageFiles.filter(_.path.contains("/Thumbnails/"))
     val previews = imageFiles.filter(_.path.contains("/Previews/"))
-    println(s"data: ${data.size} masters: ${masters.size} thumbnails: ${thumbnails.size} previews: ${previews.size}")
+    info(s"data: ${data.size} masters: ${masters.size} thumbnails: ${thumbnails.size} previews: ${previews.size}")
     masters
   }
 
@@ -25,7 +25,7 @@ object RecoverApplePhotosLibrary {
   }
 }
 
-object CopyFromApplePhotoLibrary {
+object CopyFromApplePhotoLibrary extends Logging {
   def main(args: Array[String]): Unit = {
     val extension = args(0)
     val catalog = args(1)
@@ -39,17 +39,17 @@ object CopyFromApplePhotoLibrary {
 
     val newUniqueFiles = uniqueFileByHash.keySet.diff(uniqueFilesForOtherCatalogByHash.keySet).map(uniqueFileByHash)
 
-    println(s"${newUniqueFiles.size} files are not already in the old catalog ($existingCatalog)")
+    info(s"${newUniqueFiles.size} files are not already in the old catalog ($existingCatalog)")
 
     val uniqueFilesByYear = newUniqueFiles.groupBy(f => LocalDateTime.ofInstant(f.modifiedTime, ZoneOffset.UTC).getYear)
-    println(uniqueFilesByYear.mapValues(_.size).toSeq.sortBy(_._1))
+    info(uniqueFilesByYear.mapValues(_.size).toSeq.sortBy(_._1))
 
     val toFolder = Paths.get(outputFolder)
 
     uniqueFilesByYear.foreach { case (year, files) =>
       val folderForYear = toFolder.resolve(year.toString)
       folderForYear.toFile.mkdir()
-      println(s"Copying ${files.size} files for $year")
+      info(s"Copying ${files.size} files for $year")
       files.foreach { file =>
         val newFileName = s"${file.parent.split("/").last}_${file.name}"
         val targetFile = folderForYear.resolve(newFileName)
@@ -65,8 +65,8 @@ object CopyFromApplePhotoLibrary {
     val uniqueFiles = filesForExtension.map { f => (f.md5, f) }.toMap.values
     val totalSize = uniqueFiles.map(_.size).sum
 
-    println(s"There are ${filesForExtension.size} $extension files for total size ${filesForExtension.map(_.size).sum}")
-    println(s"There are ${uniqueFiles.size} unique files of total size $totalSize for extension $extension in catalog $catalog")
+    info(s"There are ${filesForExtension.size} $extension files for total size ${filesForExtension.map(_.size).sum}")
+    info(s"There are ${uniqueFiles.size} unique files of total size $totalSize for extension $extension in catalog $catalog")
     uniqueFiles.toSeq
   }
 }

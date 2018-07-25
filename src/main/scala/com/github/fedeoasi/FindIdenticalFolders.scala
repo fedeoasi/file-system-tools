@@ -6,7 +6,7 @@ import com.github.fedeoasi.Model._
 import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
 import org.apache.spark.{SparkConf, SparkContext}
 
-object FindIdenticalFolders extends FolderComparison with CatalogConfigParsing {
+object FindIdenticalFolders extends FolderComparison with CatalogConfigParsing with Logging {
   def findIdenticalFolders(entries: Seq[FileSystemEntry]): Seq[FolderDiff] = {
     val conf = new SparkConf().setAppName("Find Identical Folders").setMaster("local[*]")
     val sc = new SparkContext(conf)
@@ -59,14 +59,14 @@ object FindIdenticalFolders extends FolderComparison with CatalogConfigParsing {
           .sortBy(_.equalEntries.size)
           .reverse
           .foreach { d =>
-            println(s"${d.source} is identical to ${d.target} ${d.equalEntries.size}")
+            info(s"${d.source} is identical to ${d.target} ${d.equalEntries.size}")
           }
       case _ =>
     }
   }
 }
 
-object FindSimilarFolders extends CatalogConfigParsing {
+object FindSimilarFolders extends CatalogConfigParsing with Logging {
   def main(args: Array[String]): Unit = {
     parser.parse(args, CatalogConfig()) match {
       case Some(CatalogConfig(Some(catalog))) =>
@@ -78,7 +78,7 @@ object FindSimilarFolders extends CatalogConfigParsing {
           .reverse
           .take(50)
           .foreach { d =>
-            println(s""""${d.source}" "${d.target}" ${d.equalEntries.size} ${d.differentEntriesCount}""")
+            info(s""""${d.source}" "${d.target}" ${d.equalEntries.size} ${d.differentEntriesCount}""")
           }
       case _ =>
     }

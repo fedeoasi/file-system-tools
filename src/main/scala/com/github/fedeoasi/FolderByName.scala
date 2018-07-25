@@ -5,7 +5,7 @@ import java.nio.file.{Path, Paths}
 import com.github.fedeoasi.Model.{DirectoryEntry, FileSystemEntry}
 import scopt.OptionParser
 
-object FolderByName {
+object FolderByName extends Logging {
   case class FolderByNameConfig(folderName: Option[String] = None, catalog: Option[Path] = None)
 
   def findFoldersByName(folderName: String, entries: Seq[FileSystemEntry]): Seq[DirectoryEntry] = {
@@ -32,7 +32,7 @@ object FolderByName {
       case Some(FolderByNameConfig(Some(folderName), Some(catalog))) =>
         val entries = EntryPersistence.read(catalog)
         val matchedFolders = findFoldersByName(folderName, entries)
-        println(matchedFolders.mkString("\n"))
+        info(matchedFolders.mkString("\n"))
       case _ =>
     }
   }

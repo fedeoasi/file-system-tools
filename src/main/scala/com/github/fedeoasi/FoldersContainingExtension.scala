@@ -6,7 +6,7 @@ import com.github.fedeoasi.ExtensionsByFileCount.groupByExtension
 import com.github.fedeoasi.Model.{FileEntry, FileSystemEntry}
 import scopt.OptionParser
 
-object FoldersContainingExtension {
+object FoldersContainingExtension extends Logging {
 
   def foldersContainingExtension(entries: Seq[FileSystemEntry], extension: String): Map[String, Seq[FileEntry]] = {
     groupByExtension(entries).getOrElse(extension, Seq.empty).groupBy(_.parent)
@@ -34,7 +34,7 @@ object FoldersContainingExtension {
         val entries = EntryPersistence.read(catalog)
         val folders = foldersContainingExtension(entries, extension)
         val countsByFolder = folders.mapValues(_.size)
-        println(countsByFolder.toSeq.sortBy(_._2).reverse.take(20).mkString("\n"))
+        info(countsByFolder.toSeq.sortBy(_._2).reverse.take(20).mkString("\n"))
       case _ =>
     }
   }

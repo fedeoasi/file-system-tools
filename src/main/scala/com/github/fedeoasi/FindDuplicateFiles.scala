@@ -5,7 +5,7 @@ import java.nio.file.{Path, Paths}
 import com.github.fedeoasi.Model.{FileEntries, FileEntry, FileSystemEntry}
 import scopt.OptionParser
 
-object FindDuplicateFiles {
+object FindDuplicateFiles extends Logging {
   case class FundDuplicateFilesConfig(
     catalog: Option[Path] = None,
     extension: Option[String] = None)
@@ -22,8 +22,8 @@ object FindDuplicateFiles {
     val allDuplicates = duplicatesByMd5.mapValues(_.head).values.toSeq
     val k = 25
     val topK = new TopKFinder(allDuplicates).top(k)(Ordering.by(_.size))
-    println(topK.mkString("\n"))
-    println()
+    info(topK.mkString("\n"))
+    info()
 
     val duplicateCountByFolder = duplicatesByMd5.values.toSeq.flatten.groupBy(_.parent).transform {
       case (_, filesForFolder) =>
@@ -32,7 +32,7 @@ object FindDuplicateFiles {
 
     val folders = new TopKFinder(duplicateCountByFolder.toSeq).top(k)
     val topKFolders = folders.take(k)
-    println(topKFolders.mkString("\n"))
+    info(topKFolders.mkString("\n"))
   }
 
   private val parser = new OptionParser[FundDuplicateFilesConfig](getClass.getSimpleName) {

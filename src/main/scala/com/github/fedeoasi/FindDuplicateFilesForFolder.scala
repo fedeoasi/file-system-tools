@@ -4,7 +4,7 @@ import java.io.File
 
 import com.github.fedeoasi.Model.FileEntries
 
-object FindDuplicateFilesForFolder {
+object FindDuplicateFilesForFolder extends Logging {
   /** Given a source folder lists the files that are duplicated and prints
     * the locations of the duplicates that are not under the given input folder.
     *
@@ -24,14 +24,14 @@ object FindDuplicateFilesForFolder {
       val sameMd5Files = filesInOtherFoldersByMd5.getOrElse(f.md5, Seq.empty).filterNot(_.path.contains(f.path))
       (f.path, sameMd5Files)
     }
-    println(filesAndDuplicates.filter(_._2.nonEmpty).map { case (file, duplicates) =>
+    info(filesAndDuplicates.filter(_._2.nonEmpty).map { case (file, duplicates) =>
       val dups = duplicates.take(3).map(f => s"    - ${f.path}").mkString("\n")
       s"$file\n$dups"
     }.mkString("\n"))
   }
 }
 
-object FindDuplicateFilesWithinFolder {
+object FindDuplicateFilesWithinFolder extends Logging {
   /** Given a source folder lists the files that are duplicated under the given folder and prints
     * the locations of the duplicates.
     *
@@ -52,13 +52,13 @@ object FindDuplicateFilesWithinFolder {
       filesForMd5.filterNot(_.name == canonicalFile.name)
     }
     filesToDelete.foreach { f =>
-      println(f.path)
+      info(f.path)
       new File(f.path).delete()
     }
   }
 }
 
-object FindDuplicateFilesWithinSecondaryFolder {
+object FindDuplicateFilesWithinSecondaryFolder extends Logging {
   /** Given a source folder lists the files that are duplicated and prints
     * the locations of the duplicates under the given input folder.
     *
@@ -79,7 +79,7 @@ object FindDuplicateFilesWithinSecondaryFolder {
 
     secondaryFiles.foreach { secondaryFile =>
       if (primaryFilesByMd5.contains(secondaryFile.md5)) {
-        println(secondaryFile.path)
+        info(secondaryFile.path)
       }
     }
   }

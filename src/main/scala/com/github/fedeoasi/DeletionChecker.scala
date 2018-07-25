@@ -6,7 +6,7 @@ import java.nio.file.{Path, Paths}
 import com.github.fedeoasi.Model.FileSystemEntry
 import scopt.OptionParser
 
-object DeletionChecker {
+object DeletionChecker extends Logging {
   case class DeletionCheckerConfig(catalog: Option[Path] = None, folder: Option[String] = None)
 
   //TODO make sure that the the parent folder exists, otherwise we will wipe out a catalog if you forgot to
@@ -43,7 +43,7 @@ object DeletionChecker {
             (entries, Seq.empty)
         }
         val (toKeep, toDelete) = findDeletions(toCheck)
-        println(s"Found ${toDelete.size} entries to delete")
+        info(s"Found ${toDelete.size} entries to delete")
         EntryPersistence.write(toKeepWithoutCheck ++ toKeep, catalog)
       case _ =>
     }

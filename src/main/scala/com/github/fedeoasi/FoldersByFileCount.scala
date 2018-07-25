@@ -7,7 +7,7 @@ import scopt.OptionParser
 
 case class FoldersByFileConfig(catalog: Option[Path] = None, folder: Option[Path] = None)
 
-object FoldersByFileCount {
+object FoldersByFileCount extends Logging {
   private val parser = new OptionParser[FoldersByFileConfig](getClass.getSimpleName) {
     head(getClass.getSimpleName)
 
@@ -61,7 +61,7 @@ object FoldersByFileCount {
         val entries = EntryPersistence.read(catalog)
         val entriesByParent = entries.groupBy(_.parent)
         val countByFolder = fileCounts(folder, entriesByParent)
-        println(new TopKFinder(countByFolder.toSeq).top(50)(Ordering.by(_._2)).mkString("\n"))
+        info(new TopKFinder(countByFolder.toSeq).top(50)(Ordering.by(_._2)).mkString("\n"))
       case _ =>
     }
   }

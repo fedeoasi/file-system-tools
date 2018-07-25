@@ -5,7 +5,7 @@ import java.nio.file.{Path, Paths}
 import com.github.fedeoasi.Model.FileEntries
 import scopt.OptionParser
 
-object FindFileByMd5 {
+object FindFileByMd5 extends Logging {
   case class FindFileByMd5Config(
     catalog: Option[Path] = None,
     md5: Option[String] = None)
@@ -29,7 +29,7 @@ object FindFileByMd5 {
       case Some(FindFileByMd5Config(Some(catalog), Some(md5))) =>
         val files = FileEntries(EntryPersistence.read(catalog))
         val filteredFiles = files.filter(_.md5 == md5)
-        println(filteredFiles.mkString("\n"))
+        info(filteredFiles.mkString("\n"))
       case _ =>
     }
   }

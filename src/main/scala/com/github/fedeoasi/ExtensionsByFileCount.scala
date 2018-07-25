@@ -3,7 +3,7 @@ package com.github.fedeoasi
 import com.github.fedeoasi.Model.{FileEntries, FileEntry, FileSystemEntry}
 import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
 
-object ExtensionsByFileCount extends CatalogConfigParsing {
+object ExtensionsByFileCount extends CatalogConfigParsing with Logging {
   def groupByExtension(entries: Seq[FileSystemEntry]): Map[String, Seq[FileEntry]] = {
     val files = FileEntries(entries)
     val filesAndExtensions = files.collect { case f if f.extension.isDefined => (f, f.extension.get.toLowerCase) }
@@ -19,7 +19,7 @@ object ExtensionsByFileCount extends CatalogConfigParsing {
         val countsByExtension = filesByExtension.transform { (_, files) =>
           (files.size, files.map(_.md5).toSet.size)
         }.toSeq
-        println(new TopKFinder(countsByExtension).top(20)(Ordering.by(_._2._1)).mkString("\n"))
+        info(new TopKFinder(countsByExtension).top(20)(Ordering.by(_._2._1)).mkString("\n"))
       case _ =>
     }
   }

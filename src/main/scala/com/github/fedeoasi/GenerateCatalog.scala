@@ -6,7 +6,7 @@ import java.util.function.Consumer
 import com.github.fedeoasi.Model.FileSystemEntry
 import scopt.OptionParser
 
-object GenerateCatalog {
+object GenerateCatalog extends Logging {
   case class GenerateCatalogReport(added: Long, total: Long)
 
   case class GenerateCatalogConfig(inputFolder: Option[Path] = None, catalog: Option[Path] = None, populateMd5: Boolean = true)
@@ -57,7 +57,7 @@ object GenerateCatalog {
     parser.parse(args, GenerateCatalogConfig()) match {
       case Some(GenerateCatalogConfig(Some(inputFolder), Some(catalog), populateMd5)) =>
         val report = generateMetadata(inputFolder, catalog, populateMd5)
-        println(s"Added: ${report.added} Total: ${report.total}")
+        info(s"Added: ${report.added} Total: ${report.total}")
       case _ =>
     }
   }
