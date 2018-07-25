@@ -60,3 +60,82 @@ cd file-system-tools-*
 You can also [generate other kinds of packages](https://www.scala-sbt.org/sbt-native-packager/gettingstarted.html#create-a-package).
 
 NOTE: You may have to set `JAVA_HOME` appropriately for the shell scripts to work.
+
+## Use Case: Organizing an External Hard Drive
+
+### Goals
+
+- Minimize the number of files
+- Have at most one copy of a file
+- Have a common directory structure (photos, projects, documents)
+- Minimize the disk space (lower priority)
+
+### Workflow
+
+#### Generate a catalog for the external hard drive starting from a root
+  folder:
+
+```
+runMain com.github.fedeoasi.GenerateCatalog --inputFolder <ROOT_FOLDER>
+  --catalog <CATALOG_NAME>
+```
+
+Note: GenerateCatalog computes the md5 sums for all files by default.
+You can disable the sums generation using the flag `--populate-md5 false`.
+The deduplication tools only work when the md5 sums have been generated.
+
+#### Files by Size
+
+```
+runMain com.github.fedeoasi.FilesBySize --catalog <CATALOG_NAME>
+```
+
+The command above prints the biggest files. Use this tool to find files
+to delete. This will save disk space and speeds up the md5 computation
+when generating the catalog.
+
+If you delete some files, you can then update the catalog using `DeletionChecker`.
+
+```
+runMain com.github.fedeoasi.DeletionChecker --catalog <CATALOG_NAME>
+```
+
+Note: You can pass an optional folder to restrict the search for deleted
+files using the `--folder` parameter.
+
+#### Folders by File Count
+
+```
+runMain com.github.fedeoasi.FoldersByFileCount --catalog <CATALOG_NAME>
+--folder <ROOT_FOLDER>
+```
+
+The above command prints the folders containing the most files. Deleting
+folders with many files that are not needed will speed up the generation
+and analysis for the rest of the catalog.
+
+#### File Counts by Extension
+
+```
+runMain com.github.fedeoasi.ExtensionsByFileCount --catalog <CATALOG_NAME>
+```
+
+The above prints file extensions ranked by number of files. This helps
+identifying undesired extensions that use a lot of files (e.g., svn files,
+local caching, etc) and how many images or documents are on the drive.
+
+#### Find Duplicate Files
+
+(Requires md5 sums)
+
+```
+runMain com.github.fedeoasi.FindDuplicateFiles --catalog <CATALOG_NAME>
+```
+
+The above prints a list of the biggest files that are duplicated (more than
+one identical copies). It also prints folders ranked by how many duplicate
+files they contain.
+
+Note: You can pass an extension through the `extension` parameter so that
+only files of the given extension will be analyzed. This can be used for
+example to deduplicate images (e.g., jpg).
