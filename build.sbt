@@ -9,5 +9,5 @@ lazy val root = (project in file("."))
     )),
     name := "File System Tools",
     libraryDependencies ++= Seq(
-      airframeLog, arm, commonsCodec, commonsIo, scalaCsv, scalaTest % Test, scopt, sparkCore)
+      airframeLog, akkaStream, akkaStreamTest, arm, commonsCodec, commonsIo, scalaCsv, scalaTest % Test, scopt, sparkCore)
   ).enablePlugins(JavaAppPackaging)

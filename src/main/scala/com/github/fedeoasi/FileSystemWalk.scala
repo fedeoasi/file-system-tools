@@ -5,10 +5,14 @@ import java.nio.file.{Files, Path}
 import java.time.Instant
 import java.util.function.Consumer
 
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl._
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry, FileSystemEntry}
 import org.apache.commons.codec.digest.DigestUtils
 import resource.managed
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
 /** Walks the file system tree and exposes all new entries one by one to a `Consumer`.
@@ -18,8 +22,11 @@ import scala.util.{Failure, Success, Try}
 class FileSystemWalk(directory: Path, existingEntryIndex: EntryIndex, populateMd5: Boolean = true) extends Logging {
   require(directory.toFile.isDirectory)
 
-  def traverse(consumer: Consumer[FileSystemEntry]): Unit = {
-    Files.walk(directory).forEach(new PathConsumer(consumer))
+  def traverse(consumer: Consumer[FileSystemEntry])(implicit materializer: ActorMaterializer): Unit = {
+    val runStream = StreamConverters.fromJavaStream(() => Files.walk(directory))
+      .map(toFileSystemEntry)
+      .runWith(Sink.foreach(entry => entry.foreach(consumer.accept)))
+    Await.ready(runStream, 6.hours)
   }
 
   private def createDirectory(file: File): DirectoryEntry = {
@@ -40,6 +47,18 @@ class FileSystemWalk(directory: Path, existingEntryIndex: EntryIndex, populateMd
       case Failure(_) =>
         info(s"Error processing file ${file.getPath}" )
         None
+    }
+  }
+
+  private def toFileSystemEntry(path: Path): Option[FileSystemEntry] = {
+    if (!existingEntryIndex.contains(path.toFile.getPath)) {
+      if (path.toFile.isDirectory) {
+        Some(createDirectory(path.toFile))
+      } else {
+        createFile(path.toFile)
+      }
+    } else {
+      None
     }
   }
 

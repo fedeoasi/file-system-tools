@@ -3,8 +3,12 @@ package com.github.fedeoasi
 import java.nio.file.{Path, Paths}
 import java.util.function.Consumer
 
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import com.github.fedeoasi.Model.FileSystemEntry
 import scopt.OptionParser
+
+import scala.util.{Success, Try}
 
 object GenerateCatalog extends Logging {
   case class GenerateCatalogReport(added: Long, total: Long)
@@ -35,7 +39,13 @@ object GenerateCatalog extends Logging {
 
     val entryWriterConsumer = new EntryWriterConsumer(catalogFile)
 
-    new FileSystemWalk(inputFolder, existingEntryIndex, populateMd5).traverse(entryWriterConsumer)
+    implicit val system: ActorSystem = ActorSystem("GenerateCatalog")
+    implicit val materializer: ActorMaterializer = ActorMaterializer()
+    try {
+      new FileSystemWalk(inputFolder, existingEntryIndex, populateMd5).traverse(entryWriterConsumer)
+    } finally {
+      system.terminate()
+    }
     val readEntries = new EntryReader(catalogFile).count()
     GenerateCatalogReport(entryWriterConsumer.entriesCount, readEntries)
   }
