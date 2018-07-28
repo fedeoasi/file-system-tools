@@ -24,6 +24,10 @@ object FindDuplicateFilesForFolder extends Logging {
       val sameMd5Files = filesInOtherFoldersByMd5.getOrElse(f.md5, Seq.empty).filterNot(_.path.contains(f.path))
       (f.path, sameMd5Files)
     }
+
+    val (uniqueFiles, duplicatedFiles) = filesAndDuplicates.partition(_._2.isEmpty)
+    info(s"There are ${uniqueFiles.size} unique files and ${duplicatedFiles.size} duplicated files\n")
+
     info(filesAndDuplicates.filter(_._2.nonEmpty).map { case (file, duplicates) =>
       val dups = duplicates.take(3).map(f => s"    - ${f.path}").mkString("\n")
       s"$file\n$dups"
