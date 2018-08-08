@@ -2,10 +2,14 @@ package com.github.fedeoasi
 
 import java.nio.file.{Path, Paths}
 
-import com.github.fedeoasi.Model.FileEntries
+import com.github.fedeoasi.Model.{FileEntries, FileEntry}
 import scopt.OptionParser
 
 object FindFileByMd5 extends Logging {
+  def find(files: Seq[FileEntry], md5: String): Seq[FileEntry] = {
+    files.filter(_.md5.exists(_ == md5))
+  }
+
   case class FindFileByMd5Config(
     catalog: Option[Path] = None,
     md5: Option[String] = None)
@@ -28,7 +32,7 @@ object FindFileByMd5 extends Logging {
     parser.parse(args, FindFileByMd5Config()) match {
       case Some(FindFileByMd5Config(Some(catalog), Some(md5))) =>
         val files = FileEntries(EntryPersistence.read(catalog))
-        val filteredFiles = files.filter(_.md5 == md5)
+        val filteredFiles = find(files, md5)
         info(filteredFiles.mkString("\n"))
       case _ =>
     }
