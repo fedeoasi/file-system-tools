@@ -4,7 +4,7 @@ import java.nio.file.{Files, Path}
 import java.util.UUID
 
 trait TemporaryFiles {
-  def withTempDir[T](prefix: String)(f: Path => T): T = {
+  def withTempDir[T](prefix: String = "")(f: Path => T): T = {
     val tempDir = Files.createTempDirectory(prefix)
     try {
       f(tempDir)

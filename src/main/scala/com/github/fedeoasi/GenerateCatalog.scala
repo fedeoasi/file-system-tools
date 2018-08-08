@@ -8,8 +8,6 @@ import akka.stream.ActorMaterializer
 import com.github.fedeoasi.Model.FileSystemEntry
 import scopt.OptionParser
 
-import scala.util.{Success, Try}
-
 object GenerateCatalog extends Logging {
   case class GenerateCatalogReport(added: Long, total: Long)
 

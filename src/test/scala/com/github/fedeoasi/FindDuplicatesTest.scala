@@ -1,41 +1,42 @@
 package com.github.fedeoasi
 
-import java.nio.file.{Path, Paths}
-import java.util.function.Consumer
+import java.nio.file.Paths
 
-import com.github.fedeoasi.Model.FileSystemEntry
+import com.github.fedeoasi.Model.FileEntry
 import org.scalatest.{FunSpec, Matchers}
 
-class FindDuplicateFilesForFolderTest extends FunSpec with Matchers with TemporaryFiles {
-  class EntryAccumulator extends Consumer[FileSystemEntry] {
-    private var _entries = Seq.empty[FileSystemEntry]
+class FindDuplicatesTest extends FunSpec with Matchers with TemporaryFiles {
+  private val baseDir = Paths.get("src/test/resources/FindDuplicates")
 
-    override def accept(entry: FileSystemEntry): Unit = {
-      _entries = entry +: _entries
-    }
-
-    def entries = _entries.reverse
-  }
-
-  private val findDuplicatesDir: Path = Paths.get("src/test/resources/FindDuplicates")
   withTempDir() { tmpDir =>
     val tmpFile = tmpDir.resolve(generateCatalogFilename())
-    val accumulator = new EntryAccumulator
-    GenerateCatalog.generateMetadata(findDuplicatesDir, tmpFile, true, accumulator)
+    GenerateCatalog.generateMetadata(baseDir, tmpFile, populateMd5 = true)
     val entries = EntryPersistence.read(tmpFile)
-    val noDuplicatesDir = findDuplicatesDir.resolve("NoDuplicates")
+    val noDuplicatesDir = baseDir.resolve("NoDuplicates")
+    val dirWithDuplicates = baseDir.resolve("DuplicatesWithin")
 
-    it("does not find duplicates within the folder") {
+    it("does not find duplicates within a folder that contains duplicates") {
+      val finder = new FindDuplicateFilesWithinFolder(entries, dirWithDuplicates)
+      paths(finder.filesAndDuplicates) shouldBe Seq(
+        dirWithDuplicates.resolve("b.txt").toString -> Seq(dirWithDuplicates.resolve("c.txt").toString)
+      )
+    }
+
+    it("does not find duplicates within a folder that does not contain duplicates") {
       val finder = new FindDuplicateFilesWithinFolder(entries, noDuplicatesDir)
-      finder.filesAndDuplicates.map { case (filePath, duplicates) => filePath -> duplicates.map(_.path.toString) } shouldBe Seq.empty
+      paths(finder.filesAndDuplicates) shouldBe Seq.empty
     }
 
     it("finds a duplicate outside of the given folder") {
       val finder = new FindDuplicateFilesForFolder(entries, noDuplicatesDir)
       val file = noDuplicatesDir.resolve("d.txt")
-      finder.filesAndDuplicates.map { case (filePath, duplicates) => filePath -> duplicates.map(_.path.toString) } shouldBe Seq(
-        file.toString -> Seq(findDuplicatesDir.resolve("OtherFolder").resolve("e.txt").toString)
+      paths(finder.filesAndDuplicates) shouldBe Seq(
+        file.toString -> Seq(baseDir.resolve("OtherFolder").resolve("e.txt").toString)
       )
     }
+  }
+
+  private def paths(input: Seq[(String, Seq[FileEntry])]): Seq[(String, Seq[String])] = {
+    input.map { case (filePath, duplicates) => filePath -> duplicates.map(_.path.toString) }
   }
 }

@@ -4,9 +4,8 @@ import java.nio.file.{Path, Paths}
 import java.text.NumberFormat
 
 import com.github.fedeoasi.Model._
+import com.github.fedeoasi.cli.CatalogAndFolderConfig
 import scopt.OptionParser
-
-case class CatalogAndFolderConfig(catalog: Option[Path] = None, folder: Option[Path] = None)
 
 trait FoldersByStat extends Logging {
   def stats(
