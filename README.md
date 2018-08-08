@@ -114,6 +114,17 @@ The above command prints the folders containing the most files. Deleting
 folders with many files that are not needed will speed up the generation
 and analysis for the rest of the catalog.
 
+#### Folders by File Size
+
+```
+runMain com.github.fedeoasi.FoldersByFileSize --catalog <CATALOG_NAME>
+--folder <ROOT_FOLDER>
+```
+
+The above command prints the folders whose sum of file size is largest.
+Deleting folders with big files that are not needed will speed up the
+generation and analysis for the rest of the catalog.
+
 #### File Counts by Extension
 
 ```
