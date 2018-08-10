@@ -40,23 +40,23 @@ class FindDuplicateFilesTest extends FunSpec with Matchers with TemporaryFiles {
 
     it("finds the largest duplicate") {
       val finder = new FindDuplicateFiles(entries)
-      finder.largestDuplicateFiles(1).map(_.path) should contain theSameElementsAs Seq(
-        noDuplicatesDir.resolve("d.txt").toString
+      paths(finder.largestDuplicates(1)) should contain theSameElementsAs Seq(
+        noDuplicatesDir.resolve("d.txt").toString -> Seq(otherFolder.resolve("e.txt").toString)
       )
     }
 
     it("only finds one largest duplicate for a folder with just one duplicate") {
       val finder = new FindDuplicateFiles(entries, Some(dirWithDuplicates))
-      finder.largestDuplicateFiles(3).map(_.path) should contain theSameElementsAs Seq(
-        dirWithDuplicates.resolve("b.txt").toString
+      paths(finder.largestDuplicates(3)) should contain theSameElementsAs Seq(
+        dirWithDuplicates.resolve("b.txt").toString -> Seq(dirWithDuplicates.resolve("c.txt").toString)
       )
     }
 
     it("finds the largest duplicates") {
       val finder = new FindDuplicateFiles(entries)
-      finder.largestDuplicateFiles(10).map(_.path) should contain theSameElementsAs Seq(
-        noDuplicatesDir.resolve("d.txt").toString,
-        dirWithDuplicates.resolve("b.txt").toString
+      paths(finder.largestDuplicates(10)) should contain theSameElementsAs Seq(
+        noDuplicatesDir.resolve("d.txt").toString -> Seq(otherFolder.resolve("e.txt").toString),
+        dirWithDuplicates.resolve("b.txt").toString -> Seq(dirWithDuplicates.resolve("c.txt").toString)
       )
     }
   }

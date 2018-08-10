@@ -13,11 +13,6 @@ class FindDuplicateFiles(entries: Seq[FileSystemEntry], folder: Option[Path] = N
       entriesForMd5.size > 1
   }
 
-  def largestDuplicateFiles(k: Int): Seq[FileEntry] = {
-    val allDuplicates = filesAndDuplicates.map(_._1)
-    new TopKFinder(allDuplicates).top(k)(Ordering.by(_.size))
-  }
-
   def largestDuplicates(k: Int): Seq[(FileEntry, Seq[FileEntry])] = {
     new TopKFinder(filesAndDuplicates).top(k)(Ordering.by(_._1.size))
   }

@@ -29,7 +29,6 @@ incrementally update the catalog.
 ### Deduplication
 
 - `FindDuplicateFiles`: Find duplicated files
-- `FindDuplicateFilesForFolder`: Find duplicated files from a target folder
 - `FindIdenticalFolders`: Find identical folders
 - `FindSimilarFolders`: Find folders that have a large number of common files
 
@@ -143,10 +142,16 @@ local caching, etc) and how many images or documents are on the drive.
 runMain com.github.fedeoasi.FindDuplicateFiles --catalog <CATALOG_NAME>
 ```
 
-The above prints a list of the biggest files that are duplicated (more than
-one identical copies). It also prints folders ranked by how many duplicate
-files they contain.
+The above prints a list of files that are duplicated (one or more
+identical copies) sorted by size.
 
-Note: You can pass an extension through the `extension` parameter so that
+Note: A `folder` parameter can be used to limit the duplicate search to files in
+a given folder. The copies will be searched for in the rest of the catalog
+but only files that appear in the given folder will be reported.
+
+You can pass an extension through the `extension` parameter so that
 only files of the given extension will be analyzed. This can be used for
 example to deduplicate images (e.g., jpg).
+
+A `show-duplicates` parameter determines whether the copies should be printed
+along with the original file that is duplicated.
