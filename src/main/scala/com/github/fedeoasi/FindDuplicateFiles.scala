@@ -3,6 +3,7 @@ package com.github.fedeoasi
 import java.nio.file.{Path, Paths}
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry, FileSystemEntry}
+import com.github.fedeoasi.collection.TopKFinder
 import scopt.OptionParser
 
 class FindDuplicateFiles(entries: Seq[FileSystemEntry], folder: Option[Path] = None) {

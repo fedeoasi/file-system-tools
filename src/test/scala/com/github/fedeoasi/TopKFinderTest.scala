@@ -1,5 +1,6 @@
 package com.github.fedeoasi
 
+import com.github.fedeoasi.collection.TopKFinder
 import org.scalatest.{FunSpec, Matchers}
 
 class TopKFinderTest extends FunSpec with Matchers {

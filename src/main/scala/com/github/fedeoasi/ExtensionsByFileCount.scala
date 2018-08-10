@@ -2,6 +2,7 @@ package com.github.fedeoasi
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry, FileSystemEntry}
 import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
+import com.github.fedeoasi.collection.TopKFinder
 
 object ExtensionsByFileCount extends CatalogConfigParsing with Logging {
   def groupByExtension(entries: Seq[FileSystemEntry]): Map[String, Seq[FileEntry]] = {

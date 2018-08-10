@@ -5,6 +5,7 @@ import java.text.NumberFormat
 
 import com.github.fedeoasi.Model._
 import com.github.fedeoasi.cli.CatalogAndFolderConfig
+import com.github.fedeoasi.collection.TopKFinder
 import scopt.OptionParser
 
 trait FoldersByStat extends Logging {

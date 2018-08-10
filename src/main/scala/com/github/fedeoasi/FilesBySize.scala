@@ -4,6 +4,7 @@ import java.text.NumberFormat
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry}
 import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
+import com.github.fedeoasi.collection.TopKFinder
 import wvlet.log._
 
 object FilesBySize extends CatalogConfigParsing with Logging {

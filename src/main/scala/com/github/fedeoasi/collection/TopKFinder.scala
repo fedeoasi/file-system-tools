@@ -1,4 +1,4 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.collection
 
 class TopKFinder[T](seq: Seq[T]) {
   def top(k: Int)(implicit ordering: Ordering[T]): Seq[T] = {
