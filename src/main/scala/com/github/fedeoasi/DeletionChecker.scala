@@ -7,12 +7,19 @@ import com.github.fedeoasi.Model.FileSystemEntry
 import scopt.OptionParser
 
 object DeletionChecker extends Logging {
-  case class DeletionCheckerConfig(catalog: Option[Path] = None, folder: Option[String] = None)
+  case class DeletionCheckerConfig(catalog: Option[Path] = None, folder: Option[Path] = None)
+  case class DeletionCheckerResult(toKeepWithoutCheck: Seq[FileSystemEntry], toKeep: Seq[FileSystemEntry], toDelete: Seq[FileSystemEntry])
 
-  //TODO make sure that the the parent folder exists, otherwise we will wipe out a catalog if you forgot to
-  //connect your hard drive
-  def findDeletions(entries: Seq[FileSystemEntry]): (Seq[FileSystemEntry], Seq[FileSystemEntry]) = {
-    entries.partition(e => new File(e.path).exists())
+  def check(catalog: Path, folder: Option[Path]): DeletionCheckerResult = {
+    val entries = EntryPersistence.read(catalog)
+    val (toCheck, toKeepWithoutCheck) = folder match {
+      case Some(dir) =>
+        entries.partition(_.path.startsWith(dir.toString))
+      case None =>
+        (entries, Seq.empty)
+    }
+    val (toKeep, toDelete) = toCheck.partition(e => new File(e.path).exists())
+    DeletionCheckerResult(toKeepWithoutCheck, toKeep, toDelete)
   }
 
   private val parser = new OptionParser[DeletionCheckerConfig](getClass.getSimpleName) {
@@ -24,7 +31,7 @@ object DeletionChecker extends Logging {
       .text("The catalog file (csv)")
 
     opt[String]('f', "folder")
-      .action { case (folder, config) => config.copy(folder = Some(folder)) }
+      .action { case (folder, config) => config.copy(folder = Some(Paths.get(folder))) }
       .text("The root from which to check for deletions")
 
     help("help").text("prints this usage text")
@@ -35,16 +42,9 @@ object DeletionChecker extends Logging {
   def main(args: Array[String]): Unit = {
     parser.parse(args, DeletionCheckerConfig()) match {
       case Some(DeletionCheckerConfig(Some(catalog), optionalFolder)) =>
-        val entries = EntryPersistence.read(catalog)
-        val (toCheck, toKeepWithoutCheck) = optionalFolder match {
-          case Some(folder) =>
-            entries.partition(_.path.startsWith(folder))
-          case None =>
-            (entries, Seq.empty)
-        }
-        val (toKeep, toDelete) = findDeletions(toCheck)
-        info(s"Found ${toDelete.size} entries to delete")
-        EntryPersistence.write(toKeepWithoutCheck ++ toKeep, catalog)
+        val result = check(catalog, optionalFolder)
+        info(s"Found ${result.toDelete.size} entries to delete")
+        EntryPersistence.write(result.toKeepWithoutCheck ++ result.toKeep, catalog)
       case _ =>
     }
   }
