@@ -35,6 +35,9 @@ object FindIdenticalFolders extends FolderComparison with CatalogConfigParsing w
     }
     val result = folderDiffRdd.collect().toSeq
     sc.stop()
+    // Make sure that our logging preferences get applied after they've gotten
+    // overridden by Spark
+    customizeLogger()
     result
   }
 
