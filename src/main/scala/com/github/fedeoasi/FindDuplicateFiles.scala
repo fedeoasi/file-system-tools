@@ -6,7 +6,7 @@ import com.github.fedeoasi.Model.{FileEntries, FileEntry, FileSystemEntry}
 import com.github.fedeoasi.collection.TopKFinder
 import scopt.OptionParser
 
-class FindDuplicateFiles(entries: Seq[FileSystemEntry], folder: Option[Path] = None) {
+class FindDuplicateFiles(entries: Seq[FileSystemEntry], folder: Option[Path] = None) extends Logging {
   private val files = entries.collect { case f: FileEntry if f.md5.nonEmpty => f }
 
   private val duplicatesByMd5 = files.groupBy(_.md5).filter {
@@ -15,6 +15,7 @@ class FindDuplicateFiles(entries: Seq[FileSystemEntry], folder: Option[Path] = N
   }
 
   def largestDuplicates(k: Int): Seq[(FileEntry, Seq[FileEntry])] = {
+    logger.info(s"There are ${filesAndDuplicates.size} duplicates. Showing the first $k")
     new TopKFinder(filesAndDuplicates).top(k)(Ordering.by(_._1.size))
   }
 
@@ -59,9 +60,14 @@ object FindDuplicateFiles extends Logging {
     extension: Option[String] = None,
     showDuplicates: Boolean = false)
 
-  def printDuplicates(entries: Seq[FileSystemEntry], folder: Option[Path], printDups: Boolean): Unit = {
+  def findDuplicates(entries: Seq[FileSystemEntry], folder: Option[Path]): Seq[(FileEntry, Seq[FileEntry])] = {
     val finder = new FindDuplicateFiles(entries, folder)
-    info(finder.largestDuplicates(k = 25).map { case (canonical, duplicates) =>
+    finder.largestDuplicates(k = 25)
+  }
+
+  def printDuplicates(entries: Seq[FileSystemEntry], folder: Option[Path], printDups: Boolean): Unit = {
+    val filesAndDuplicates = findDuplicates(entries, folder)
+    info(filesAndDuplicates.map { case (canonical, duplicates) =>
       lazy val dups = duplicates.take(3).map(f => s"    - ${f.path}").mkString("\n")
       canonical.path + (if (printDups) s"\n$dups" else "")
     }.mkString("\n"))
@@ -98,7 +104,7 @@ object FindDuplicateFiles extends Logging {
           case Some(extension) => files.filter(_.extension.exists(_.equalsIgnoreCase(extension)))
           case None => files
         }
-        printDuplicates(filteredFiles, optionalFolder, showDuplicates)
+      printDuplicates(filteredFiles, optionalFolder, showDuplicates)
       case _ =>
     }
   }
