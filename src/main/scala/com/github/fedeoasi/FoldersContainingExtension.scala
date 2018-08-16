@@ -17,12 +17,14 @@ object FoldersContainingExtension extends Logging {
   private val parser = new OptionParser[FoldersContainingExtensionConfig](getClass.getSimpleName) {
     head(getClass.getSimpleName)
 
-    opt[String]('e', "extension").required()
+    opt[String]('e', "extension")
       .action { case (extension, config) => config.copy(extension = Some(extension)) }
       .text("The extension to search for")
+      .required()
     opt[String]('c', "catalog")
       .action { case (catalog, config) => config.copy(catalog = Some(Paths.get(catalog))) }
       .text("The catalog file (csv)")
+      .required()
 
     help("help").text("prints this usage text")
   }
