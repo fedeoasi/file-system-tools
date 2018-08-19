@@ -26,7 +26,7 @@ object GenerateCatalog extends Logging {
       .required()
     opt[Boolean]('m', "populate-md5")
       .action { case (md5, config) => config.copy(populateMd5 = md5) }
-      .text("The csv file where the catalog will be stored")
+      .text("true to compute the md5 hash of each file, false to leave it empty")
 
     help("help").text("prints this usage text")
   }
