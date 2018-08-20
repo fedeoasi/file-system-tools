@@ -89,7 +89,7 @@ object FindDuplicateFiles extends Logging {
       .action { case (extension, config) => config.copy(extension = Some(extension)) }
       .text("The extension of the files to be searched")
 
-    opt[Boolean]('d', "show-duplicates")
+    opt[Boolean]('u', "show-duplicates")
       .action { case (showDuplicates, config) => config.copy(showDuplicates = showDuplicates) }
       .text("Print paths of the duplicate files along with the canonical file")
 
