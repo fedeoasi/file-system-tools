@@ -1,32 +1,37 @@
 package com.github.fedeoasi
 
-import com.github.fedeoasi.FindIdenticalFolders.findIdenticalFolders
+import com.github.fedeoasi.DiffFolders.diff
 import com.github.fedeoasi.FolderComparison.FolderDiff
 import com.github.fedeoasi.Model._
 import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
 import org.apache.spark.{SparkConf, SparkContext}
 
-object FindIdenticalFolders extends FolderComparison with CatalogConfigParsing with Logging {
-  def findIdenticalFolders(entries: Seq[FileSystemEntry]): Seq[FolderDiff] = {
+/** Finds identical folders. Two folders are considered identical if they have the same name and contain exact copies
+  * of the same files.
+  *
+  * The analysis is performed in parallel using Spark.
+  */
+object DiffFolders extends FolderComparison with CatalogConfigParsing with Logging {
+  def diff(entries: Seq[FileSystemEntry]): Seq[FolderDiff] = {
     val conf = new SparkConf().setAppName("Find Identical Folders").setMaster("local[*]")
     val sc = new SparkContext(conf)
 
-    val entryRdd = sc.parallelize(entries)
+    val allEntries = sc.parallelize(entries)
 
-    val filesRdd = entryRdd.collect { case f: FileEntry => f }
-    val directoriesRdd = entryRdd.collect { case d: DirectoryEntry => (d.path, d) }
+    val files = allEntries.collect { case f: FileEntry => f }
+    val directories = allEntries.collect { case d: DirectoryEntry => (d.path, d) }
 
-    val ancestorAndFileRdd = filesRdd.flatMap { file =>
+    val ancestorsAndFiles = files.flatMap { file =>
       ancestors(file).map((_, file))
     }
-    val filesByFolderRdd = ancestorAndFileRdd.groupByKey()
+    val filesByAncestor = ancestorsAndFiles.groupByKey()
 
-    val foldersAndFilesRdd = directoriesRdd.join(filesByFolderRdd).values
+    val foldersAndFiles = directories.join(filesByAncestor).values
 
-    val duplicatesByNameRdd = foldersAndFilesRdd.groupBy(_._1.name).filter(_._2.size > 1)
+    val duplicateFoldersByName = foldersAndFiles.groupBy(_._1.name).filter(_._2.size > 1)
 
-    val folderDiffRdd = duplicatesByNameRdd.flatMap { case (_, duplicateFolders) =>
-      val Seq((d1, d1Files), (d2, d2Files), _*) = duplicateFolders
+    val folderDiffRdd = duplicateFoldersByName.flatMap { case (_, duplicateFolders) =>
+      val Seq((d1, d1Files), (d2, d2Files), _*) = duplicateFolders.toSeq.sortBy(_._1.path)
       if (d1.path.contains(d2.path) || d2.path.contains(d1.path)) {
         None
       } else {
@@ -41,14 +46,17 @@ object FindIdenticalFolders extends FolderComparison with CatalogConfigParsing w
     result
   }
 
-  private def ancestors(file: FileEntry) = {
-    val parts = file.parent.split("/")
-    val sb = new StringBuilder(parts(0))
-    (1 until parts.length).map { i =>
-      val ancestor = sb.toString()
-      sb.append("/").append(parts(i))
-      ancestor
-    }
+  //This assumes a UNIX file system where the root and separator are '/'
+  private[fedeoasi] def ancestors(file: FileEntry): Seq[String] = {
+    val parts = file.parent.split("/").filterNot(_.isEmpty)
+    // TODO rewrite as a foldLeft
+    println(parts.toList)
+    val sb = new StringBuilder()
+    parts.foldLeft(Seq.empty[String]) {
+      case (result, part) =>
+        sb.append("/").append(part)
+        sb.toString() +: result
+    }.reverse
   }
 
   /** Find identical folders present in the catalog. */
@@ -56,7 +64,7 @@ object FindIdenticalFolders extends FolderComparison with CatalogConfigParsing w
     parser.parse(args, CatalogConfig()) match {
       case Some(CatalogConfig(Some(catalog))) =>
         val entries = EntryPersistence.read(catalog)
-        val folderDiffs = findIdenticalFolders(entries)
+        val folderDiffs = diff(entries)
         folderDiffs
           .filter(d => d.differentEntriesCount == 0 && d.equalEntries.nonEmpty)
           .sortBy(_.equalEntries.size)
@@ -74,7 +82,7 @@ object FindSimilarFolders extends CatalogConfigParsing with Logging {
     parser.parse(args, CatalogConfig()) match {
       case Some(CatalogConfig(Some(catalog))) =>
         val entries = EntryPersistence.read(catalog)
-        val folderDiffs = findIdenticalFolders(entries)
+        val folderDiffs = diff(entries)
         folderDiffs
           .filter(d => d.equalEntries.nonEmpty && d.differentEntriesCount > 0)
           .sortBy(d => d.equalEntries.size - d.differentEntriesCount)
