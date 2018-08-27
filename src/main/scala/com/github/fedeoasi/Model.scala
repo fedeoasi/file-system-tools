@@ -23,6 +23,16 @@ object Model {
     modifiedTime: Instant) extends FileSystemEntry {
 
     def extension: Option[String] = name.split("\\.").toSeq.lastOption
+
+    //This assumes a UNIX file system where the root and separator are '/'
+    def ancestors: Seq[String] = {
+      val parts = parent.split("/").filterNot(_.isEmpty)
+      val sb = new StringBuilder()
+      parts.foldLeft(Seq.empty[String]) {
+        case (result, part) =>
+          sb.append("/").append(part).toString() +: result
+      }.reverse
+    }
   }
 
   object FileEntries {

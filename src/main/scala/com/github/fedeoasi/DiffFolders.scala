@@ -22,7 +22,7 @@ object DiffFolders extends FolderComparison with CatalogConfigParsing with Loggi
     val directories = allEntries.collect { case d: DirectoryEntry => (d.path, d) }
 
     val ancestorsAndFiles = files.flatMap { file =>
-      ancestors(file).map((_, file))
+      file.ancestors.map((_, file))
     }
     val filesByAncestor = ancestorsAndFiles.groupByKey()
 
@@ -49,8 +49,6 @@ object DiffFolders extends FolderComparison with CatalogConfigParsing with Loggi
   //This assumes a UNIX file system where the root and separator are '/'
   private[fedeoasi] def ancestors(file: FileEntry): Seq[String] = {
     val parts = file.parent.split("/").filterNot(_.isEmpty)
-    // TODO rewrite as a foldLeft
-    println(parts.toList)
     val sb = new StringBuilder()
     parts.foldLeft(Seq.empty[String]) {
       case (result, part) =>

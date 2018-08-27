@@ -21,12 +21,6 @@ class DiffFoldersTest extends FunSpec with Matchers {
 
   private val allFolders = Seq(root, nested1, nested2, folder, otherFolder)
 
-  describe("ancestors function") {
-    it("finds the ancestors for a file") {
-      ancestors(uniqueFile) should contain theSameElementsAs Seq(root.parent, root.path, nested1.path, folder.path)
-    }
-  }
-
   it("does not compare an empty set of entries") {
     diff(Seq.empty) shouldBe Seq.empty
   }
