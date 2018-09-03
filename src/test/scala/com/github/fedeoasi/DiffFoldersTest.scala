@@ -2,12 +2,12 @@ package com.github.fedeoasi
 
 import java.time.Instant
 
-import com.github.fedeoasi.DiffFolders._
 import com.github.fedeoasi.FolderComparison.FolderDiff
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
 import org.scalatest.{FunSpec, Matchers}
+import DiffFolders._
 
-class DiffFoldersTest extends FunSpec with Matchers {
+class DiffFoldersTest extends FunSpec with Matchers with SparkTest {
   private val instant = Instant.now
   private val root = DirectoryEntry("/catalog", "root", instant)
   private val nested1 = DirectoryEntry(root.path, "nested1", instant)
@@ -22,21 +22,21 @@ class DiffFoldersTest extends FunSpec with Matchers {
   private val allFolders = Seq(root, nested1, nested2, folder, otherFolder)
 
   it("does not compare an empty set of entries") {
-    diff(Seq.empty) shouldBe Seq.empty
+    diff(sparkContext, Seq.empty) shouldBe Seq.empty
   }
 
   it("does not compare a single entry") {
-    diff(Seq(root)) shouldBe Seq.empty
+    diff(sparkContext, Seq(root)) shouldBe Seq.empty
   }
 
   it("diffs two identical folders") {
-    diff(allFolders ++ Seq(duplicatedFile1, duplicatedFile2)) should contain theSameElementsAs Seq(
+    diff(sparkContext, allFolders ++ Seq(duplicatedFile1, duplicatedFile2)) should contain theSameElementsAs Seq(
       FolderDiff(folder.path, otherFolder.path, Seq(duplicatedFile1), Seq.empty, Seq.empty, Seq.empty)
     )
   }
 
   it("diffs two different folders") {
-    diff(allFolders ++ Seq(uniqueFile, duplicatedFile2)) should contain theSameElementsAs Seq(
+    diff(sparkContext, allFolders ++ Seq(uniqueFile, duplicatedFile2)) should contain theSameElementsAs Seq(
       FolderDiff(folder.path, otherFolder.path, Seq.empty, Seq(uniqueFile), Seq(duplicatedFile2), Seq.empty)
     )
   }
