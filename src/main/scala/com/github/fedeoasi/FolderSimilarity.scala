@@ -33,7 +33,7 @@ object FolderSimilarity extends CatalogConfigParsing with SparkSupport with Logg
       val sortedFolders = folders.toSeq.sortBy(_.entry.path)
       for {
         f1 <- sortedFolders
-        f2 <- sortedFolders if !DiffFolders.areRelated(f1.entry, f2.entry)
+        f2 <- sortedFolders if f1.entry.path < f2.entry.path && !DiffFolders.areRelated(f1.entry, f2.entry)
       } yield (f1, f2) -> 1.0
     }.reduceByKey(_ + _)
     val rdd = commonFileCountByFolderPair.map { case ((f1, f2), counts) =>
