@@ -2,7 +2,7 @@ package com.github.fedeoasi
 
 import com.github.fedeoasi.DiffFolders._
 import com.github.fedeoasi.Model.{DirectoryEntry, FileSystemEntry}
-import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
+import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing, CliCommand}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -15,6 +15,7 @@ import org.apache.spark.rdd.RDD
   * - The weights are binary
   */
 object FolderSimilarity extends CatalogConfigParsing with SparkSupport with Logging {
+  override val command = CliCommand("folder-similarity", "Ranks folder pairs by MD5 sum similarity.")
   case class Folder(entry: DirectoryEntry, fileCount: Int)
   case class Score(fileCount1: Int, fileCount2: Int, count: Double) {
     def cosineSimilarity: Double = count / (Math.sqrt(fileCount1) * Math.sqrt(fileCount2))

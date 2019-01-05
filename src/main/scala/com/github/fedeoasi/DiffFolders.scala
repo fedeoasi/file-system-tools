@@ -2,7 +2,7 @@ package com.github.fedeoasi
 
 import com.github.fedeoasi.FolderComparison.FolderDiff
 import com.github.fedeoasi.Model._
-import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
+import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing, CliCommand}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -57,6 +57,8 @@ object DiffFolders extends FolderComparison with Logging {
   * The analysis is performed in parallel using Spark.
   */
 object FindIdenticalFolders extends CatalogConfigParsing with SparkSupport with Logging {
+  override val command = CliCommand("find-identical-folders", "Find identical folders, having the same name and files.")
+
   /** Find identical folders present in the catalog. */
   def main(args: Array[String]): Unit = {
     parser.parse(args, CatalogConfig()) match {
@@ -82,6 +84,8 @@ object FindIdenticalFolders extends CatalogConfigParsing with SparkSupport with 
   * The analysis is performed in parallel using Spark.
   */
 object FindSimilarFolders extends CatalogConfigParsing with Logging with SparkSupport {
+  override val command = CliCommand("find-similar-folders", "Finds similar but not identical folders that have the same name.")
+
   def main(args: Array[String]): Unit = {
     parser.parse(args, CatalogConfig()) match {
       case Some(CatalogConfig(Some(catalog))) =>

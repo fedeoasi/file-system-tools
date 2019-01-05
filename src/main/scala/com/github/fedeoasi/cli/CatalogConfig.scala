@@ -6,9 +6,9 @@ import scopt.OptionParser
 
 case class CatalogConfig(catalog: Option[Path] = None)
 
-trait CatalogConfigParsing {
-  protected val parser = new OptionParser[CatalogConfig](getClass.getSimpleName) {
-    head(getClass.getSimpleName)
+trait CatalogConfigParsing extends CliAware {
+  protected lazy val parser = new OptionParser[CatalogConfig](command.name) {
+    head(command.description + "\n")
 
     opt[String]('c', "catalog")
       .action { case (catalog, config) => config.copy(catalog = Some(Paths.get(catalog))) }
@@ -16,5 +16,4 @@ trait CatalogConfigParsing {
 
     help("help").text("prints this usage text")
   }
-
 }

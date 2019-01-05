@@ -4,11 +4,11 @@ import java.nio.file.{Path, Paths}
 import java.text.NumberFormat
 
 import com.github.fedeoasi.Model._
-import com.github.fedeoasi.cli.CatalogAndFolderConfig
+import com.github.fedeoasi.cli.{CatalogAndFolderConfig, CliAware, CliCommand}
 import com.github.fedeoasi.collection.TopKFinder
 import scopt.OptionParser
 
-trait FoldersByStat extends Logging {
+trait FoldersByStat extends Logging with CliAware {
   def stats(
     root: Path,
     entriesByParent: Map[String, Seq[FileSystemEntry]],
@@ -35,8 +35,9 @@ trait FoldersByStat extends Logging {
 }
 
 object FoldersByFileCount extends FoldersByStat {
-  private val parser = new OptionParser[CatalogAndFolderConfig](getClass.getSimpleName) {
-    head(getClass.getSimpleName)
+  override val command = CliCommand("folders-by-count", "Ranks folders by file counts.")
+  private val parser = new OptionParser[CatalogAndFolderConfig](command.name) {
+    head(command.description + "\n")
 
     opt[String]('c', "catalog")
       .action { case (catalog, config) => config.copy(catalog = Some(Paths.get(catalog))) }
@@ -72,8 +73,9 @@ object FoldersByFileCount extends FoldersByStat {
 }
 
 object FoldersByFileSize extends FoldersByStat {
-  private val parser = new OptionParser[CatalogAndFolderConfig](getClass.getSimpleName) {
-    head(getClass.getSimpleName)
+  override val command = CliCommand("folders-by-file-size", "Ranks folders by file size.")
+  private val parser = new OptionParser[CatalogAndFolderConfig](command.name) {
+    head(command.description + "\n")
 
     opt[String]('c', "catalog")
       .action { case (catalog, config) => config.copy(catalog = Some(Paths.get(catalog))) }

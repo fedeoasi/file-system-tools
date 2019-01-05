@@ -17,7 +17,7 @@ class FindDuplicateFilesTest extends FunSpec with Matchers with TemporaryFiles {
     val otherFolder = baseDir.resolve("OtherFolder")
 
     it("finds all duplicates") {
-      val finder = new FindDuplicateFiles(entries)
+      val finder = new DuplicateFilesFinder(entries)
       paths(finder.filesAndDuplicates) should contain theSameElementsAs Seq(
         dirWithDuplicates.resolve("b.txt").toString -> Seq(dirWithDuplicates.resolve("c.txt").toString),
         noDuplicatesDir.resolve("d.txt").toString -> Seq(otherFolder.resolve("e.txt").toString)
@@ -25,36 +25,36 @@ class FindDuplicateFilesTest extends FunSpec with Matchers with TemporaryFiles {
     }
 
     it("finds all duplicates for a folder") {
-      val finder = new FindDuplicateFiles(entries, Some(noDuplicatesDir))
+      val finder = new DuplicateFilesFinder(entries, Some(noDuplicatesDir))
       paths(finder.filesAndDuplicates) should contain theSameElementsAs Seq(
         noDuplicatesDir.resolve("d.txt").toString -> Seq(otherFolder.resolve("e.txt").toString)
       )
     }
 
     it("finds all duplicates for a folder that itself contains duplicates") {
-      val finder = new FindDuplicateFiles(entries, Some(dirWithDuplicates))
+      val finder = new DuplicateFilesFinder(entries, Some(dirWithDuplicates))
       paths(finder.filesAndDuplicates) should contain theSameElementsAs Seq(
         dirWithDuplicates.resolve("b.txt").toString -> Seq(dirWithDuplicates.resolve("c.txt").toString)
       )
     }
 
     it("finds the largest duplicate") {
-      val finder = new FindDuplicateFiles(entries)
-      paths(finder.largestDuplicates(1)) should contain theSameElementsAs Seq(
+      val finder = new DuplicateFilesFinder(entries)
+      paths(finder.largestDuplicates(Some(1))) should contain theSameElementsAs Seq(
         noDuplicatesDir.resolve("d.txt").toString -> Seq(otherFolder.resolve("e.txt").toString)
       )
     }
 
     it("only finds one largest duplicate for a folder with just one duplicate") {
-      val finder = new FindDuplicateFiles(entries, Some(dirWithDuplicates))
-      paths(finder.largestDuplicates(3)) should contain theSameElementsAs Seq(
+      val finder = new DuplicateFilesFinder(entries, Some(dirWithDuplicates))
+      paths(finder.largestDuplicates(Some(3))) should contain theSameElementsAs Seq(
         dirWithDuplicates.resolve("b.txt").toString -> Seq(dirWithDuplicates.resolve("c.txt").toString)
       )
     }
 
     it("finds the largest duplicates") {
-      val finder = new FindDuplicateFiles(entries)
-      paths(finder.largestDuplicates(10)) should contain theSameElementsAs Seq(
+      val finder = new DuplicateFilesFinder(entries)
+      paths(finder.largestDuplicates(Some(10))) should contain theSameElementsAs Seq(
         noDuplicatesDir.resolve("d.txt").toString -> Seq(otherFolder.resolve("e.txt").toString),
         dirWithDuplicates.resolve("b.txt").toString -> Seq(dirWithDuplicates.resolve("c.txt").toString)
       )

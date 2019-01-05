@@ -3,10 +3,11 @@ package com.github.fedeoasi
 import java.nio.file.{Path, Paths}
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry, FileSystemEntry}
+import com.github.fedeoasi.cli.{CliAware, CliCommand}
 import com.github.fedeoasi.collection.TopKFinder
 import scopt.OptionParser
 
-class FindDuplicateFiles(entries: Seq[FileSystemEntry], folder: Option[Path] = None) extends Logging {
+class DuplicateFilesFinder(entries: Seq[FileSystemEntry], folder: Option[Path] = None) extends Logging {
   private val files = entries.collect { case f: FileEntry if f.md5.nonEmpty => f }
 
   private val duplicatesByMd5 = files.groupBy(_.md5).filter {
@@ -14,9 +15,14 @@ class FindDuplicateFiles(entries: Seq[FileSystemEntry], folder: Option[Path] = N
       entriesForMd5.size > 1
   }
 
-  def largestDuplicates(k: Int): Seq[(FileEntry, Seq[FileEntry])] = {
-    logger.info(s"There are ${filesAndDuplicates.size} duplicates. Showing the first $k")
-    new TopKFinder(filesAndDuplicates).top(k)(Ordering.by(_._1.size))
+  def largestDuplicates(k: Option[Int]): Seq[(FileEntry, Seq[FileEntry])] = {
+    k match {
+      case Some(kval) =>
+        logger.info(s"There are ${filesAndDuplicates.size} duplicates. Showing the first $kval")
+        new TopKFinder(filesAndDuplicates).top(kval)(Ordering.by(_._1.size))
+      case None =>
+        filesAndDuplicates
+    }
   }
 
   val filesAndDuplicates: Seq[(FileEntry, Seq[FileEntry])] = {
@@ -53,28 +59,32 @@ class FindDuplicateFiles(entries: Seq[FileSystemEntry], folder: Option[Path] = N
   }
 }
 
-object FindDuplicateFiles extends Logging {
-  case class FundDuplicateFilesConfig(
+object DuplicateFilesFinder extends Logging with CliAware {
+  override val command = CliCommand("find-duplicate-files", "Find duplicate files in a catalog file.")
+
+  case class FindDuplicateFilesConfig(
     catalog: Option[Path] = None,
     folder: Option[Path] = None,
     extension: Option[String] = None,
-    showDuplicates: Boolean = false)
+    showDuplicates: Boolean = false,
+    showAllDuplicates: Boolean = false)
 
-  def findDuplicates(entries: Seq[FileSystemEntry], folder: Option[Path]): Seq[(FileEntry, Seq[FileEntry])] = {
-    val finder = new FindDuplicateFiles(entries, folder)
-    finder.largestDuplicates(k = 25)
+  def findDuplicates(entries: Seq[FileSystemEntry], folder: Option[Path], topK: Option[Int]): Seq[(FileEntry, Seq[FileEntry])] = {
+    val finder = new DuplicateFilesFinder(entries, folder)
+    finder.largestDuplicates(topK)
   }
 
-  def printDuplicates(entries: Seq[FileSystemEntry], folder: Option[Path], printDups: Boolean): Unit = {
-    val filesAndDuplicates = findDuplicates(entries, folder)
+  def printDuplicates(entries: Seq[FileSystemEntry], folder: Option[Path], printDups: Boolean, printAllDups: Boolean): Unit = {
+    val topK = if(printAllDups) { None } else { Some(25) }
+    val filesAndDuplicates = findDuplicates(entries, folder, topK)
     info(filesAndDuplicates.map { case (canonical, duplicates) =>
       lazy val dups = duplicates.take(3).map(f => s"    - ${f.path}").mkString("\n")
       canonical.path + (if (printDups) s"\n$dups" else "")
     }.mkString("\n"))
   }
 
-  private val parser = new OptionParser[FundDuplicateFilesConfig](getClass.getSimpleName) {
-    head(getClass.getSimpleName)
+  private val parser = new OptionParser[FindDuplicateFilesConfig](command.name) {
+    head(command.description + "\n")
 
     opt[String]('c', "catalog")
       .required()
@@ -89,22 +99,26 @@ object FindDuplicateFiles extends Logging {
       .action { case (extension, config) => config.copy(extension = Some(extension)) }
       .text("The extension of the files to be searched")
 
-    opt[Boolean]('u', "show-duplicates")
-      .action { case (showDuplicates, config) => config.copy(showDuplicates = showDuplicates) }
+    opt[Unit]('u', "show-duplicates")
+      .action { case (showDuplicates, config) => config.copy(showDuplicates = true) }
       .text("Print paths of the duplicate files along with the canonical file")
+
+    opt[Unit]('a', "show-all")
+      .action { case (all, config) => config.copy(showAllDuplicates = true)}
+      .text("When showing duplicates, show all the duplicates instead of just the largest.")
 
     help("help").text("prints this usage text")
   }
 
   def main(args: Array[String]): Unit = {
-    parser.parse(args, FundDuplicateFilesConfig()) match {
-      case Some(FundDuplicateFilesConfig(Some(catalog), optionalFolder, optionalExtension, showDuplicates)) =>
+    parser.parse(args, FindDuplicateFilesConfig()) match {
+      case Some(FindDuplicateFilesConfig(Some(catalog), optionalFolder, optionalExtension, showDuplicates, showAllDuplicates)) =>
         val files = FileEntries(EntryPersistence.read(catalog))
         val filteredFiles = optionalExtension match {
           case Some(extension) => files.filter(_.extension.exists(_.equalsIgnoreCase(extension)))
           case None => files
         }
-      printDuplicates(filteredFiles, optionalFolder, showDuplicates)
+      printDuplicates(filteredFiles, optionalFolder, showDuplicates, showAllDuplicates)
       case _ =>
     }
   }

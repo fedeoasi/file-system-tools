@@ -3,10 +3,11 @@ package com.github.fedeoasi
 import java.nio.file.Path
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry, FileSystemEntry}
-import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
+import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing, CliCommand}
 import com.github.fedeoasi.collection.TopKFinder
 
 object ExtensionsByFileCount extends CatalogConfigParsing with Logging {
+  override val command = CliCommand("extensions-by-filecount", "Rank file extensions by count.")
   case class TopExtensionsResult(extension: String, count: Int, uniqueCount: Int)
 
   def groupByExtension(entries: Seq[FileSystemEntry]): Map[String, Seq[FileEntry]] = {

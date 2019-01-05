@@ -1,8 +1,32 @@
 package com.github.fedeoasi
 
-import com.github.fedeoasi.Model.FileEntries
+import java.nio.file.Paths
 
-object FindDuplicateFilesWithinSecondaryFolder extends Logging {
+import com.github.fedeoasi.FindFileByMd5.FindFileByMd5Config
+import com.github.fedeoasi.Model.FileEntries
+import com.github.fedeoasi.cli.{CliAware, CliCommand}
+import scopt.OptionParser
+
+object FindDuplicateFilesWithinSecondaryFolder extends Logging with CliAware {
+  override val command = CliCommand("lookup-duplicates", "Look for duplicate files in specific folders.")
+  private val parser = new OptionParser[FindFileByMd5Config](command.name) {
+    head(command.description + "\n")
+
+    opt[String]('c', "catalog")
+      .action { case (catalog, config) => config.copy(catalog = Some(Paths.get(catalog))) }
+      .text("The catalog file (csv)")
+
+    opt[String]('p', "reference")
+      .action { case (md5, config) => config.copy(md5 = Some(md5)) }
+      .text("The reference folder containing the files to search for")
+
+    opt[String]('s', "search")
+      .action { case (md5, config) => config.copy(md5 = Some(md5)) }
+      .text("The folder to search for duplicates")
+
+    help("help").text("prints this usage text")
+  }
+
   /** Given a source folder lists the files that are duplicated and prints
     * the locations of the duplicates under the given input folder.
     *
