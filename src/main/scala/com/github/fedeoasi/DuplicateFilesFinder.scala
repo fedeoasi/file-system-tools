@@ -78,7 +78,7 @@ object DuplicateFilesFinder extends Logging with CliAware {
     val topK = if(printAllDups) { None } else { Some(25) }
     val filesAndDuplicates = findDuplicates(entries, folder, topK)
     info(filesAndDuplicates.map { case (canonical, duplicates) =>
-      lazy val dups = duplicates.take(3).map(f => s"    - ${f.path}").mkString("\n")
+      lazy val dups = duplicates.map(f => s"    - ${f.path}").mkString("\n")
       canonical.path + (if (printDups) s"\n$dups" else "")
     }.mkString("\n"))
   }
@@ -100,11 +100,11 @@ object DuplicateFilesFinder extends Logging with CliAware {
       .text("The extension of the files to be searched")
 
     opt[Unit]('u', "show-duplicates")
-      .action { case (showDuplicates, config) => config.copy(showDuplicates = true) }
+      .action { case (_, config) => config.copy(showDuplicates = true) }
       .text("Print paths of the duplicate files along with the canonical file")
 
     opt[Unit]('a', "show-all")
-      .action { case (all, config) => config.copy(showAllDuplicates = true)}
+      .action { case (_, config) => config.copy(showAllDuplicates = true)}
       .text("When showing duplicates, show all the duplicates instead of just the largest.")
 
     help("help").text("prints this usage text")
