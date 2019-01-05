@@ -34,7 +34,6 @@ object DeletionChecker extends Logging with CliAware {
       .text("The catalog file (csv)")
 
     opt[String]('f', "folder")
-      .required()
       .action { case (folder, config) => config.copy(folder = Some(Paths.get(folder))) }
       .text("The root from which to check for deletions")
 
