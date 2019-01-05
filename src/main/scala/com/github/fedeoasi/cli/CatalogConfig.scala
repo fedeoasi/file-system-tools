@@ -11,6 +11,7 @@ trait CatalogConfigParsing extends CliAware {
     head(command.description + "\n")
 
     opt[String]('c', "catalog")
+      .required()
       .action { case (catalog, config) => config.copy(catalog = Some(Paths.get(catalog))) }
       .text("The catalog file (csv)")
 
