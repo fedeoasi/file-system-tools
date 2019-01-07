@@ -4,9 +4,11 @@ import java.nio.file.{Path, Paths}
 
 import com.github.fedeoasi.ExtensionsByFileCount.groupByExtension
 import com.github.fedeoasi.Model.{FileEntry, FileSystemEntry}
+import com.github.fedeoasi.cli.{CliAware, CliCommand}
 import scopt.OptionParser
 
-object FoldersContainingExtension extends Logging {
+object FoldersContainingExtension extends Logging with CliAware {
+  override val command = CliCommand("folders-having-extension", "Prints folders that contain files with a given extension.")
 
   def foldersContainingExtension(entries: Seq[FileSystemEntry], extension: String): Map[String, Seq[FileEntry]] = {
     groupByExtension(entries).getOrElse(extension, Seq.empty).groupBy(_.parent)

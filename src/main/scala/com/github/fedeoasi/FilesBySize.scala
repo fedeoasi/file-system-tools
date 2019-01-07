@@ -3,11 +3,12 @@ package com.github.fedeoasi
 import java.text.NumberFormat
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry}
-import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing}
+import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing, CliCommand}
 import com.github.fedeoasi.collection.TopKFinder
 import wvlet.log._
 
 object FilesBySize extends CatalogConfigParsing with Logging {
+  override val command = CliCommand("files-by-size", "Rank files by size.")
   /** Ranks files by size. */
   def main(args: Array[String]): Unit = {
     parser.parse(args, CatalogConfig()) match {
@@ -22,6 +23,7 @@ object FilesBySize extends CatalogConfigParsing with Logging {
 }
 
 object TotalSize extends CatalogConfigParsing with LogSupport {
+  override val command = CliCommand("total-size", "Compute total catalog size.")
   def main(args: Array[String]): Unit = {
     parser.parse(args, CatalogConfig()) match {
       case Some(CatalogConfig(Some(catalog))) =>

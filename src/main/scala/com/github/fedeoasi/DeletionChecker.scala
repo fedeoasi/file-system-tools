@@ -4,9 +4,12 @@ import java.io.File
 import java.nio.file.{Path, Paths}
 
 import com.github.fedeoasi.Model.FileSystemEntry
+import com.github.fedeoasi.cli.{CliAware, CliCommand}
 import scopt.OptionParser
 
-object DeletionChecker extends Logging {
+object DeletionChecker extends Logging with CliAware {
+  override val command = CliCommand("deletion-checker", "Remove entries of deleted files from a catalog file.")
+
   case class DeletionCheckerConfig(catalog: Option[Path] = None, folder: Option[Path] = None)
   case class DeletionCheckerResult(toKeepWithoutCheck: Seq[FileSystemEntry], toKeep: Seq[FileSystemEntry], toDelete: Seq[FileSystemEntry])
 
@@ -22,8 +25,8 @@ object DeletionChecker extends Logging {
     DeletionCheckerResult(toKeepWithoutCheck, toKeep, toDelete)
   }
 
-  private val parser = new OptionParser[DeletionCheckerConfig](getClass.getSimpleName) {
-    head(getClass.getSimpleName)
+  private val parser = new OptionParser[DeletionCheckerConfig](command.name) {
+    head(command.description + "\n")
 
     opt[String]('c', "catalog")
       .required()

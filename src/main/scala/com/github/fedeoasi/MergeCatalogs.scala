@@ -2,6 +2,7 @@ package com.github.fedeoasi
 
 import java.nio.file.{Path, Paths}
 
+import com.github.fedeoasi.cli.{CliAware, CliCommand}
 import scopt.OptionParser
 
 case class MergeCatalogConfig(
@@ -9,7 +10,8 @@ case class MergeCatalogConfig(
   secondaryCatalog: Option[Path] = None,
   outputCatalog: Option[Path] = None)
 
-object MergeCatalogs {
+object MergeCatalogs extends CliAware {
+  override val command = CliCommand("merge-catalogs", "Merge two catalogs into an output catalog.")
   private val parser = new OptionParser[MergeCatalogConfig](getClass.getSimpleName) {
     head(getClass.getSimpleName)
 

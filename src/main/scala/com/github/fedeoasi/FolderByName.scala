@@ -3,17 +3,19 @@ package com.github.fedeoasi
 import java.nio.file.{Path, Paths}
 
 import com.github.fedeoasi.Model.{DirectoryEntry, FileSystemEntry}
+import com.github.fedeoasi.cli.{CliAware, CliCommand}
 import scopt.OptionParser
 
-object FolderByName extends Logging {
+object FolderByName extends Logging with CliAware {
+  override val command = CliCommand("folder-by-name", "Finds a folder by name (case insensitive).")
   case class FolderByNameConfig(folderName: Option[String] = None, catalog: Option[Path] = None)
 
   def findFoldersByName(folderName: String, entries: Seq[FileSystemEntry]): Seq[DirectoryEntry] = {
     entries.collect { case d: DirectoryEntry if d.name.equalsIgnoreCase(folderName) => d }
   }
 
-  private val parser = new OptionParser[FolderByNameConfig](getClass.getSimpleName) {
-    head(getClass.getSimpleName)
+  private val parser = new OptionParser[FolderByNameConfig](command.name) {
+    head(command.description + "\n")
 
     opt[String]('n', "folderName").required()
       .action { case (folderName, config) => config.copy(folderName = Some(folderName)) }

@@ -15,6 +15,8 @@ incrementally update the catalog.
 
 ## Tools
 
+- `CliMain`: A single entry point for all the operations described below.  Using this entry point without any arguments will print out descriptive usage instructions.
+
 ### Catalog Operations
 
 - `GenerateCatalog`: Generate the catalog and incrementally add new items

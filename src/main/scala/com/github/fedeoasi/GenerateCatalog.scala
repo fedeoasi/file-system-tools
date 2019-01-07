@@ -6,15 +6,18 @@ import java.util.function.Consumer
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.github.fedeoasi.Model.FileSystemEntry
+import com.github.fedeoasi.cli.{CliAware, CliCommand}
 import scopt.OptionParser
 
-object GenerateCatalog extends Logging {
+object GenerateCatalog extends Logging with CliAware {
+  override val command = CliCommand("generate-catalog", "Catalog a directory and save it to a CSV file.")
+
   case class GenerateCatalogReport(added: Long, total: Long)
 
   case class GenerateCatalogConfig(inputFolder: Option[Path] = None, catalog: Option[Path] = None, populateMd5: Boolean = true)
 
-  private val parser = new OptionParser[GenerateCatalogConfig](getClass.getSimpleName) {
-    head(getClass.getSimpleName)
+  private val parser = new OptionParser[GenerateCatalogConfig](command.name) {
+    head(command.description + "\n")
 
     opt[String]('i', "inputFolder")
       .action { case (folder, config) => config.copy(inputFolder = Some(Paths.get(folder))) }
