@@ -6,7 +6,8 @@ object CliMain {
   val commands: Map[String, List[CliAware]] = Map(
     "Catalog creation and update" -> List(GenerateCatalog, DeletionChecker, MergeCatalogs),
     "Lookup" -> List(FolderByName, FindFileByMd5, FoldersContainingExtension),
-    "Finding duplicates" -> List(DuplicateFilesFinder, FolderSimilarity, FindIdenticalFolders, FindSimilarFolders, FindDuplicateFilesWithinSecondaryFolder),
+    "Finding duplicates" -> List(DuplicateFilesFinder, FolderPairSimilarity, FolderSimilarity, FindIdenticalFolders,
+      FindSimilarFolders, FindDuplicateFilesWithinSecondaryFolder),
     "Catalog statistics" -> List(FilesBySize, ExtensionsByFileCount)
   )
 

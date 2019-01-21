@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
 
 object DiffFolders extends FolderComparison with Logging {
   def diff(sc: SparkContext, entries: Seq[FileSystemEntry]): Seq[FolderDiff] = {
-    val foldersAndFiles = folderAndNestedFiles(sc.parallelize(entries))
+    val foldersAndFiles = folderAndNestedFileRdd(sc.parallelize(entries))
 
     val duplicateFoldersByName = foldersAndFiles.groupBy(_._1.name).filter(_._2.size > 1)
 
@@ -31,7 +31,7 @@ object DiffFolders extends FolderComparison with Logging {
     d1.path.contains(d2.path) || d2.path.contains(d1.path)
   }
 
-  def folderAndNestedFiles(entries: RDD[FileSystemEntry]): RDD[(DirectoryEntry, Iterable[FileEntry])] = {
+  def folderAndNestedFileRdd(entries: RDD[FileSystemEntry]): RDD[(DirectoryEntry, Iterable[FileEntry])] = {
     val files = entries.collect { case f: FileEntry => f }
     val directories = entries.collect { case d: DirectoryEntry => (d.path, d) }
     val ancestorsAndFiles = files.flatMap { file => file.ancestors.map((_, file)) }
@@ -92,6 +92,7 @@ object FindSimilarFolders extends CatalogConfigParsing with Logging with SparkSu
         withSparkContext { sc =>
           val entries = EntryPersistence.read(catalog)
           val folderDiffs = DiffFolders.diff(sc, entries)
+          info("Source\tTarget\tEqualEntries\tDifferent Entries")
           folderDiffs
             .filter(d => d.equalEntries.nonEmpty && d.differentEntriesCount > 0)
             .sortBy(d => d.equalEntries.size - d.differentEntriesCount)
