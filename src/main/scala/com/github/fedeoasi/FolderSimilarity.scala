@@ -1,10 +1,15 @@
 package com.github.fedeoasi
 
+import java.nio.file.{Path, Paths}
+
 import com.github.fedeoasi.DiffFolders._
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry, FileSystemEntry}
-import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing, CliCommand}
+import com.github.fedeoasi.cli.{CliAware, CliCommand}
+import com.github.fedeoasi.output.Output
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import scopt.OptionParser
+import resource._
 
 /** Ranks folder pairs by similarity. The similarity used is the cosine similarity (https://en.wikipedia.org/wiki/Cosine_similarity)
   * in the vector space formed by the MD5 sums of all the nested files under a folder.
@@ -14,7 +19,36 @@ import org.apache.spark.rdd.RDD
   * - A term is the MD5 sum of a file under the folder (files in nested folders included)
   * - The weights are binary
   */
-object FolderSimilarity extends CatalogConfigParsing with SparkSupport with Logging {
+object FolderSimilarity extends SparkSupport with Logging with CliAware {
+  case class FolderSimilarityConfig(
+    catalog: Option[Path] = None,
+    printPrefix: Boolean = false,
+    showAll: Boolean = false,
+    output: Option[Path] = None)
+
+  private lazy val parser = new OptionParser[FolderSimilarityConfig](command.name) {
+    head(s"${command.description}\n")
+
+    opt[String]('c', "catalog")
+      .required()
+      .action { case (catalog, config) => config.copy(catalog = Some(Paths.get(catalog))) }
+      .text("The catalog file (csv)")
+
+    opt[Unit]('p', "prefix")
+      .action { case (_, config) => config.copy(printPrefix = true) }
+      .text("Print the longest common prefix between folder pairs")
+
+    opt[Unit]('a', "show-all")
+      .action { case (_, config) => config.copy(showAll = true) }
+      .text("Show comparison between all folders")
+
+    opt[String]('o', "output")
+      .action { case (output, config) => config.copy(output = Some(Paths.get(output))) }
+      .text("The output file (csv)")
+
+    help("help").text("prints this usage text")
+  }
+
   override val command = CliCommand("folder-similarity", "Ranks folder pairs by MD5 sum similarity.")
   case class Folder(entry: DirectoryEntry, fileCount: Int)
   case class Score(fileCount1: Int, fileCount2: Int, count: Double) {
@@ -50,18 +84,28 @@ object FolderSimilarity extends CatalogConfigParsing with SparkSupport with Logg
 
   /** Ranks folder pairs by similarity */
   def main(args: Array[String]): Unit = {
-    parser.parse(args, CatalogConfig()) match {
-      case Some(CatalogConfig(Some(catalog))) =>
+    parser.parse(args, FolderSimilarityConfig()) match {
+      case Some(FolderSimilarityConfig(Some(catalog), printPrefix, showAll, output)) =>
         withSparkContext { sc =>
-          val entries = EntryPersistence.read(catalog)
-          val similarities = folderSimilarities(sc, entries)
-          val topSimilarities = similarities
-          logger.info("Source\tTarget\tCount\tCosineSimilarity")
-          topSimilarities.filter(_._1._1.fileCount > 10).take(50).foreach { case ((f1, f2), score) =>
-            val prefix = StringUtils.longestPrefix(f1.entry.path, f2.entry.path)
-            info(
-              s""""$prefix" "${f1.entry.path.drop(prefix.length)}" "${f2.entry.path.drop(prefix.length)}" ${f1.fileCount} """ +
-                s"""${f2.fileCount} ${score.count} ${score.cosineSimilarity}""")
+          managed(Output(output, logger)).acquireAndGet { out =>
+            val entries = EntryPersistence.read(catalog)
+            val similarities = folderSimilarities(sc, entries)
+            val topSimilarities = similarities
+
+            val results = topSimilarities.filter(_._1._1.fileCount > 10)
+            val filteredResults = if (showAll) results.collect else results.take(50)
+
+            val prefixHeader = if (printPrefix) Some("Prefix") else None
+            out.write(prefixHeader.toSeq ++ Seq("Source", "Target", "SourceFileCount", "TargetFileCount", "Count", "CosineSimilarity"))
+            filteredResults.foreach { case ((f1, f2), score) =>
+              val withPrefix = if (printPrefix) {
+                val prefix = StringUtils.longestPrefix(f1.entry.path, f2.entry.path)
+                Seq(prefix, f1.entry.path.drop(prefix.length), f2.entry.path.drop(prefix.length))
+              } else {
+                Seq(f1.entry.path, f2.entry.path)
+              }
+              out.write(withPrefix ++ Seq(f1.fileCount, f2.fileCount, score.count, score.cosineSimilarity))
+            }
           }
         }
       case _ =>
