@@ -33,6 +33,7 @@ incrementally update the catalog.
 - `FindDuplicateFiles`: Find duplicated files
 - `FindIdenticalFolders`: Find identical folders
 - `FindSimilarFolders`: Find folders that have a large number of common files
+- `FolderPairSimilarity`: Compute the similarity between a pair of folders
 
 ### Statistics
 

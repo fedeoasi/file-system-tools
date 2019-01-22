@@ -1,7 +1,7 @@
 package com.github.fedeoasi
 
 import com.github.fedeoasi.DiffFolders._
-import com.github.fedeoasi.Model.{DirectoryEntry, FileSystemEntry}
+import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry, FileSystemEntry}
 import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing, CliCommand}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -21,8 +21,7 @@ object FolderSimilarity extends CatalogConfigParsing with SparkSupport with Logg
     def cosineSimilarity: Double = count / (Math.sqrt(fileCount1) * Math.sqrt(fileCount2))
   }
 
-  def folderSimilarities(sc: SparkContext, entries: Seq[FileSystemEntry]): RDD[((Folder, Folder), Score)] = {
-    val foldersAndFiles = folderAndNestedFiles(sc.parallelize(entries))
+  def folderSimilarities(foldersAndFiles: RDD[(DirectoryEntry, Iterable[FileEntry])]): RDD[((Folder, Folder), Score)] = {
     val foldersAndMd5s = foldersAndFiles.mapValues(_.flatMap(_.md5).toSet)
 
     // Approach taken from the research paper "Pairwise Document Similarity in Large Collections with MapReduce"
@@ -44,6 +43,11 @@ object FolderSimilarity extends CatalogConfigParsing with SparkSupport with Logg
     rdd
   }
 
+  def folderSimilarities(sc: SparkContext, entries: Seq[FileSystemEntry]): RDD[((Folder, Folder), Score)] = {
+    val foldersAndFiles = folderAndNestedFileRdd(sc.parallelize(entries))
+    folderSimilarities(foldersAndFiles)
+  }
+
   /** Ranks folder pairs by similarity */
   def main(args: Array[String]): Unit = {
     parser.parse(args, CatalogConfig()) match {
@@ -52,6 +56,7 @@ object FolderSimilarity extends CatalogConfigParsing with SparkSupport with Logg
           val entries = EntryPersistence.read(catalog)
           val similarities = folderSimilarities(sc, entries)
           val topSimilarities = similarities
+          logger.info("Source\tTarget\tCount\tCosineSimilarity")
           topSimilarities.filter(_._1._1.fileCount > 10).take(50).foreach { case ((f1, f2), score) =>
             val prefix = StringUtils.longestPrefix(f1.entry.path, f2.entry.path)
             info(

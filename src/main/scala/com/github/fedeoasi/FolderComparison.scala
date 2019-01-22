@@ -1,10 +1,10 @@
 package com.github.fedeoasi
 
-import com.github.fedeoasi.FolderComparison.FolderDiff
-import com.github.fedeoasi.Model.{DirectoryEntry, FileEntries, FileEntry}
-import wvlet.log.LogSupport
+import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
 
 trait FolderComparison {
+  import FolderComparison._
+
   def diffFolders(source: String, target: String, files: Seq[FileEntry]): FolderDiff = {
     val sourceFiles = allFilesForFolder(files, source)
     val targetFiles = allFilesForFolder(files, target)
@@ -51,14 +51,14 @@ trait FolderComparison {
   def allFilesForFolder(files: Seq[FileEntry], folder: String): Seq[FileEntry] = {
     files.filter(_.path.startsWith(folder))
   }
+}
 
+object FolderComparison {
   def toRelativePath(file: FileEntry, inFolder: String): String = {
     require(file.path.startsWith(inFolder))
     file.path.substring(inFolder.length)
   }
-}
 
-object FolderComparison {
   case class FileIdentifier(relativePath: String, md5: String)
 
   case class FolderDiff(
@@ -70,6 +70,22 @@ object FolderComparison {
     differentContent: Seq[(FileEntry, FileEntry)]) {
 
     def differentEntriesCount: Int = missingInSource.size + missingInTarget.size + differentContent.size
+
+    def report: String = {
+      // show the relative paths?
+
+      val different = differentContent.map { case (f1, f2) =>
+        s"${toRelativePath(f1, source)} ${f1.modifiedTime} ${f2.modifiedTime}"
+      }.mkString("\n")
+
+      s"""
+         |${equalEntries.size} are equal in the two folders
+         |${missingInTarget.size} are in source but not in target
+         |${missingInSource.size} are in target but not in source
+         |${differentContent.size} differ in content
+         |$different
+       """.stripMargin
+    }
   }
 
   //TODO remove this
@@ -79,33 +95,3 @@ object FolderComparison {
     equalEntries: Set[FileIdentifier],
     differentEntries: Set[FileIdentifier])
 }
-
-object CompareFolders extends FolderComparison with LogSupport {
-  /** Compare folders based on the contents of the contained folders
-    * and files.
-    *
-    * @param args [CATALOG] [FOLDER_1] [FOLDER_2]
-    */
-  def main(args: Array[String]): Unit = {
-    val catalog = args(0)
-    val folder1 = args(1)
-    val folder2 = args(2)
-    val entries = EntryPersistence.read(catalog)
-
-    val files = FileEntries(entries)
-
-    val folderDiff = diffFolders(folder1, folder2, files)
-
-    info(s"${folderDiff.equalEntries.size} are equal in the two folders\n")
-    info(s"${folderDiff.missingInTarget.size} are in source but not in target")
-    info(folderDiff.missingInTarget.map(toRelativePath(_, folder1)).mkString("\n"))
-    info(s"\n${folderDiff.missingInSource.size} are in target but not in source")
-    info(folderDiff.missingInSource.map(toRelativePath(_, folder2)).mkString("\n"))
-    info(s"\n${folderDiff.differentContent.size} differ in content")
-    info(folderDiff.differentContent.map { case (f1, f2) =>
-      s"${toRelativePath(f1, folder1)} ${f1.modifiedTime} ${f2.modifiedTime}"
-    }.mkString("\n"))
-  }
-}
-
-
