@@ -125,8 +125,7 @@ files using the `--folder` parameter.
 #### Folders by File Count
 
 ```
-run folders-by-file-count --catalog <CATALOG_NAME>
---folder <ROOT_FOLDER>
+run folders-by-file-count --catalog <CATALOG_NAME> --folder <ROOT_FOLDER>
 ```
 
 The above command prints the folders containing the most files. Deleting
@@ -136,8 +135,7 @@ and analysis for the rest of the catalog.
 #### Folders by File Size
 
 ```
-run folders-by-file-size --catalog <CATALOG_NAME>
---folder <ROOT_FOLDER>
+run folders-by-file-size --catalog <CATALOG_NAME> --folder <ROOT_FOLDER>
 ```
 
 The above command prints the folders whose sum of file size is largest.
