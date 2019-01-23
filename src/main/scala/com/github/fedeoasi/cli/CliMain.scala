@@ -7,8 +7,8 @@ object CliMain {
     "Catalog creation and update" -> List(GenerateCatalog, DeletionChecker, MergeCatalogs),
     "Lookup" -> List(FolderByName, FindFileByMd5, FoldersContainingExtension),
     "Finding duplicates" -> List(DuplicateFilesFinder, FolderPairSimilarity, FolderSimilarity, FindIdenticalFolders,
-      FindSimilarFolders, FindDuplicateFilesWithinSecondaryFolder),
-    "Catalog statistics" -> List(FilesBySize, ExtensionsByFileCount)
+      FindDuplicateFilesWithinSecondaryFolder),
+    "Catalog statistics" -> List(ExtensionsByFileCount, FilesBySize, FoldersByFileCount, FoldersByFileSize)
   )
 
   def main(args: Array[String]): Unit = {

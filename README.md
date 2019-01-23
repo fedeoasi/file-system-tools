@@ -15,32 +15,50 @@ incrementally update the catalog.
 
 ## Tools
 
-- `CliMain`: A single entry point for all the operations described below.  Using this entry point without any arguments will print out descriptive usage instructions.
+The single entry point for all of the operations provided by file-system
+tools is a class called `CliMain`. It exposes as commands all of the
+operations described below.
+
+Using this entry point without any arguments will print out descriptive
+usage instructions. Using the `run` sbt command will run `CliMain`.
+
+In an SBT console:
+```
+# Show a list of commands along with their description
+run
+
+# Run a specific command with arguments
+run <COMMAND> <ARGS>
+```
 
 ### Catalog Operations
 
-- `GenerateCatalog`: Generate the catalog and incrementally add new items
-- `DeletionChecker`: Find catalog entries that were deleted and remove them from the
-  catalog
+- `generate-catalog`: Generate the catalog and incrementally add new items
+- `deletion-checker`: Find catalog entries that were deleted and remove them
+  from the catalog
+- `merge-catalogs`: Merge two catalogs into an output catalog
 
 ### Search
 
-- `FolderByName`: Find folders by name
-- `FoldersContainingExtension`: Find the folders that contain a file type
+- `folder-by-name`: Find folders by name
+- `find-file-by-md5`: Find the folders that contain a file type
+- `folders-having-extension`: Prints folders that contain files with a given extension.
 
 ### Deduplication
 
-- `FindDuplicateFiles`: Find duplicated files
-- `FindIdenticalFolders`: Find identical folders
-- `FindSimilarFolders`: Find folders that have a large number of common files
-- `FolderPairSimilarity`: Compute the similarity between a pair of folders
+- `find-duplicate-files`: Find duplicate files in a catalog
+- `find-identical-folders`: Find identical folders in a catalog
+- `folder-similarity`: Ranks folder pairs by MD5 sum similarity
+- `folder-pair-similarity`: Compute the MD5 sum similarity between a pair of folders
+- `lookup-duplicates`: Lookup duplicates within two given folders
 
 ### Statistics
 
-- `FoldersByFileCount`: Rank folders by file count
-- `FilesBySize`: Rank files by size
-- `TotalSize`: Compute the total size of the files in the catalog
-- `ExtensionsByFileCount`: Find the most common extensions
+- `extensions-by-file-count`: Find the most common extensions
+- `files-by-size`: Rank files by size
+- `folders-by-file-count`: Rank folders by file count
+- `folders-by-file-size`: Rank folders by file size
+- `total-size`: Compute the catalog total size
 
 ## Scala Native Package
 
@@ -50,7 +68,8 @@ To build a Scala Native package, run:
 sbt universal:packageBin
 ```
 
-This will generate a zip file under `target/universal`, which you can extract anywhere and run the commands:
+This will generate a zip file under `target/universal`, which you can
+extract anywhere and run the commands:
 
 ```
 cd target/universal
@@ -74,12 +93,10 @@ NOTE: You may have to set `JAVA_HOME` appropriately for the shell scripts to wor
 
 ### Workflow
 
-#### Generate a catalog for the external hard drive starting from a root
-  folder:
+#### Generate a catalog for the external hard drive starting from a root folder:
 
 ```
-runMain com.github.fedeoasi.GenerateCatalog --inputFolder <ROOT_FOLDER>
-  --catalog <CATALOG_NAME>
+run generate-catalog --inputFolder <ROOT_FOLDER> --catalog <CATALOG_NAME>
 ```
 
 Note: GenerateCatalog computes the md5 sums for all files by default.
@@ -89,17 +106,17 @@ The deduplication tools only work when the md5 sums have been generated.
 #### Files by Size
 
 ```
-runMain com.github.fedeoasi.FilesBySize --catalog <CATALOG_NAME>
+run files-by-size --catalog <CATALOG_NAME>
 ```
 
 The command above prints the biggest files. Use this tool to find files
 to delete. This will save disk space and speeds up the md5 computation
 when generating the catalog.
 
-If you delete some files, you can then update the catalog using `DeletionChecker`.
+If you delete some files, you can then update the catalog using `deletion-checker`.
 
 ```
-runMain com.github.fedeoasi.DeletionChecker --catalog <CATALOG_NAME>
+run deletion-checker --catalog <CATALOG_NAME>
 ```
 
 Note: You can pass an optional folder to restrict the search for deleted
@@ -108,7 +125,7 @@ files using the `--folder` parameter.
 #### Folders by File Count
 
 ```
-runMain com.github.fedeoasi.FoldersByFileCount --catalog <CATALOG_NAME>
+run folders-by-file-count --catalog <CATALOG_NAME>
 --folder <ROOT_FOLDER>
 ```
 
@@ -119,7 +136,7 @@ and analysis for the rest of the catalog.
 #### Folders by File Size
 
 ```
-runMain com.github.fedeoasi.FoldersByFileSize --catalog <CATALOG_NAME>
+run folders-by-file-size --catalog <CATALOG_NAME>
 --folder <ROOT_FOLDER>
 ```
 
@@ -130,7 +147,7 @@ generation and analysis for the rest of the catalog.
 #### File Counts by Extension
 
 ```
-runMain com.github.fedeoasi.ExtensionsByFileCount --catalog <CATALOG_NAME>
+run extensions-by-file-count --catalog <CATALOG_NAME>
 ```
 
 The above prints file extensions ranked by number of files. This helps
@@ -142,7 +159,7 @@ local caching, etc) and how many images or documents are on the drive.
 (Requires md5 sums)
 
 ```
-runMain com.github.fedeoasi.FindDuplicateFiles --catalog <CATALOG_NAME>
+run find-duplicate-files --catalog <CATALOG_NAME>
 ```
 
 The above prints a list of files that are duplicated (one or more
