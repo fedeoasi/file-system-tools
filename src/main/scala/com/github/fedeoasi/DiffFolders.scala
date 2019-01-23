@@ -78,31 +78,3 @@ object FindIdenticalFolders extends CatalogConfigParsing with SparkSupport with 
     }
   }
 }
-
-/** Finds similar but not identical folders that have the same name.
-  *
-  * The analysis is performed in parallel using Spark.
-  */
-object FindSimilarFolders extends CatalogConfigParsing with Logging with SparkSupport {
-  override val command = CliCommand("find-similar-folders", "Finds similar but not identical folders that have the same name.")
-
-  def main(args: Array[String]): Unit = {
-    parser.parse(args, CatalogConfig()) match {
-      case Some(CatalogConfig(Some(catalog))) =>
-        withSparkContext { sc =>
-          val entries = EntryPersistence.read(catalog)
-          val folderDiffs = DiffFolders.diff(sc, entries)
-          info("Source\tTarget\tEqualEntries\tDifferent Entries")
-          folderDiffs
-            .filter(d => d.equalEntries.nonEmpty && d.differentEntriesCount > 0)
-            .sortBy(d => d.equalEntries.size - d.differentEntriesCount)
-            .reverse
-            .take(50)
-            .foreach { d =>
-              info(s""""${d.source}" "${d.target}" ${d.equalEntries.size} ${d.differentEntriesCount}""")
-            }
-          }
-      case _ =>
-    }
-  }
-}
