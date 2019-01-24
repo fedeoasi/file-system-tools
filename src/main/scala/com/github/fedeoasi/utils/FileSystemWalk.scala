@@ -5,7 +5,7 @@ import java.nio.file.{Files, Path}
 import java.time.Instant
 import java.util.function.Consumer
 
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, ClosedShape}
 import akka.stream.scaladsl._
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry, FileSystemEntry}
 import com.github.fedeoasi.catalog.EntryIndex
@@ -17,6 +17,8 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 /** Walks the file system tree and exposes all new entries one by one to a `Consumer`.
   *
   * Supports incremental walks by using an index of existing entries supplied as `existingEntryIndex` parameter.
@@ -24,12 +26,38 @@ import scala.util.{Failure, Success, Try}
 class FileSystemWalk(directory: Path, existingEntryIndex: EntryIndex, populateMd5: Boolean = true) extends Logging {
   require(directory.toFile.isDirectory)
 
-  def traverse(consumer: Consumer[FileSystemEntry])(implicit materializer: ActorMaterializer): Unit = {
-    val runStream = StreamConverters.fromJavaStream(() => Files.walk(directory))
-      .map(toFileSystemEntry)
-      .runWith(Sink.foreach(entry => entry.foreach(consumer.accept)))
-    Await.ready(runStream, 6.hours)
+  private val countingSink = Sink.fold[Long, FileSystemEntry](0)((acc, _) => acc + 1)
+
+  def traverse(consumer: Consumer[FileSystemEntry])(implicit materializer: ActorMaterializer): Long = {
+    val consumerSink = Sink.foreach[FileSystemEntry](consumer.accept)
+    val graph = RunnableGraph.fromGraph(GraphDSL.create(countingSink, consumerSink)((_, _)) { implicit builder =>
+      (s1, s2) =>
+        import GraphDSL.Implicits._
+
+        val broadcast = builder.add(Broadcast[FileSystemEntry](2))
+        val source = StreamConverters.fromJavaStream(() => Files.walk(directory))
+          .mapConcat(e => toImmutable(toFileSystemEntry(e).toIterable))
+
+        source ~> broadcast.in
+        broadcast.out(0) ~> s1
+        broadcast.out(1) ~> s2
+        ClosedShape
+    })
+
+    val (futureCount, futureDone) = graph.run()
+    val overallFuture = for {
+      count <- futureCount
+      done <- futureDone
+    } yield (count, done)
+
+    val (count, _) = Await.result(overallFuture, 6.hours)
+    count
   }
+
+  private def toImmutable[A](elements: Iterable[A]): scala.collection.immutable.Iterable[A] =
+    new scala.collection.immutable.Iterable[A] {
+      override def iterator: Iterator[A] = elements.toIterator
+    }
 
   private def createDirectory(file: File): DirectoryEntry = {
     DirectoryEntry(file.getParent, file.getName, Instant.ofEpochMilli(file.lastModified()))
@@ -61,18 +89,6 @@ class FileSystemWalk(directory: Path, existingEntryIndex: EntryIndex, populateMd
       }
     } else {
       None
-    }
-  }
-
-  private class PathConsumer(entryConsumer: Consumer[FileSystemEntry]) extends Consumer[Path] {
-    override def accept(path: Path): Unit = {
-      if (!existingEntryIndex.contains(path.toFile.getPath)) {
-        if (path.toFile.isDirectory) {
-          entryConsumer.accept(createDirectory(path.toFile))
-        } else {
-          createFile(path.toFile).foreach(entryConsumer.accept)
-        }
-      }
     }
   }
 }
