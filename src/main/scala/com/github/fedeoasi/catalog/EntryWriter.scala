@@ -1,4 +1,4 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.catalog
 
 import java.io.Closeable
 import java.nio.file.Path

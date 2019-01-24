@@ -1,9 +1,11 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.deduplication
 
 import java.nio.file.{Path, Paths}
 
 import com.github.fedeoasi.Model.FileEntries
+import com.github.fedeoasi.catalog.EntryPersistence
 import com.github.fedeoasi.cli.{CliAware, CliCommand}
+import com.github.fedeoasi.output.Logging
 import scopt.OptionParser
 
 case class FindDuplicateFilesWithinSecondaryFolderConfig(catalog: Option[Path] = None,

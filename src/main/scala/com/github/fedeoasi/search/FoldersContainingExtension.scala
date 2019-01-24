@@ -1,10 +1,12 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.search
 
 import java.nio.file.{Path, Paths}
 
-import com.github.fedeoasi.ExtensionsByFileCount.groupByExtension
+import com.github.fedeoasi.statistics.ExtensionsByFileCount.groupByExtension
 import com.github.fedeoasi.Model.{FileEntry, FileSystemEntry}
+import com.github.fedeoasi.catalog.EntryPersistence
 import com.github.fedeoasi.cli.{CliAware, CliCommand}
+import com.github.fedeoasi.output.Logging
 import scopt.OptionParser
 
 object FoldersContainingExtension extends Logging with CliAware {

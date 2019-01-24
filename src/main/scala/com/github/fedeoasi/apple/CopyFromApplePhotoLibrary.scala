@@ -4,7 +4,9 @@ import java.nio.file.{Files, Paths, StandardCopyOption}
 import java.time.{LocalDateTime, ZoneOffset}
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry}
-import com.github.fedeoasi.{EntryPersistence, ExtensionsByFileCount, Logging}
+import com.github.fedeoasi.catalog.EntryPersistence
+import com.github.fedeoasi.statistics.ExtensionsByFileCount
+import com.github.fedeoasi.output.Logging
 
 //TODO Proper command line app
 object RecoverApplePhotosLibrary extends Logging {

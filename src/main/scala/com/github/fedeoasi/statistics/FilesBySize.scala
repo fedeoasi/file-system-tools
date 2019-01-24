@@ -1,10 +1,12 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.statistics
 
 import java.text.NumberFormat
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry}
+import com.github.fedeoasi.catalog.EntryPersistence
 import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing, CliCommand}
 import com.github.fedeoasi.collection.TopKFinder
+import com.github.fedeoasi.output.Logging
 import wvlet.log._
 
 object FilesBySize extends CatalogConfigParsing with Logging {

@@ -1,4 +1,4 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.utils
 
 import scala.annotation.tailrec
 

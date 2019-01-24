@@ -1,8 +1,11 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.deduplication
 
-import com.github.fedeoasi.FolderComparison.FolderDiff
 import com.github.fedeoasi.Model._
+import com.github.fedeoasi.catalog.EntryPersistence
 import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing, CliCommand}
+import com.github.fedeoasi.output.Logging
+import com.github.fedeoasi.deduplication.FolderComparison.FolderDiff
+import com.github.fedeoasi.spark.SparkSupport
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 

@@ -1,4 +1,4 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.utils
 
 import java.io.{File, FileInputStream}
 import java.nio.file.{Files, Path}
@@ -8,6 +8,8 @@ import java.util.function.Consumer
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl._
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry, FileSystemEntry}
+import com.github.fedeoasi.catalog.EntryIndex
+import com.github.fedeoasi.output.Logging
 import org.apache.commons.codec.digest.DigestUtils
 import resource.managed
 

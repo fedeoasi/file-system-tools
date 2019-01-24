@@ -1,10 +1,11 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.catalog
 
 import java.io.File
 import java.nio.file.{Path, Paths}
 
 import com.github.fedeoasi.Model.FileSystemEntry
 import com.github.fedeoasi.cli.{CliAware, CliCommand}
+import com.github.fedeoasi.output.Logging
 import scopt.OptionParser
 
 object DeletionChecker extends Logging with CliAware {

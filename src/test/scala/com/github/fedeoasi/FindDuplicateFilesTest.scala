@@ -3,6 +3,8 @@ package com.github.fedeoasi
 import java.nio.file.Paths
 
 import com.github.fedeoasi.Model.FileEntry
+import com.github.fedeoasi.catalog.{EntryPersistence, GenerateCatalog}
+import com.github.fedeoasi.deduplication.DuplicateFilesFinder
 import org.scalatest.{FunSpec, Matchers}
 
 class FindDuplicateFilesTest extends FunSpec with Matchers with TemporaryFiles {

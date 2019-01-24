@@ -1,11 +1,13 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.statistics
 
 import java.nio.file.{Path, Paths}
 import java.text.NumberFormat
 
 import com.github.fedeoasi.Model._
+import com.github.fedeoasi.catalog.EntryPersistence
 import com.github.fedeoasi.cli.{CatalogAndFolderConfig, CliAware, CliCommand}
 import com.github.fedeoasi.collection.TopKFinder
+import com.github.fedeoasi.output.Logging
 import scopt.OptionParser
 
 trait FoldersByStat extends Logging with CliAware {

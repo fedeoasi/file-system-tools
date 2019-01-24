@@ -3,7 +3,7 @@ package com.github.fedeoasi
 import org.scalatest.{FunSpec, Matchers}
 
 class StringUtilsTest extends FunSpec with Matchers {
-  import StringUtils._
+  import com.github.fedeoasi.utils.StringUtils._
 
   describe("longest prefix") {
     it("finds a prefix") {

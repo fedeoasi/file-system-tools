@@ -1,4 +1,4 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.catalog
 
 import java.nio.file.{Path, Paths}
 import java.time.Instant

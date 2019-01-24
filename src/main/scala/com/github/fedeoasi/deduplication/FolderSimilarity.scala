@@ -1,15 +1,18 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.deduplication
 
 import java.nio.file.{Path, Paths}
 
-import com.github.fedeoasi.DiffFolders._
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry, FileSystemEntry}
+import com.github.fedeoasi.catalog.EntryPersistence
 import com.github.fedeoasi.cli.{CliAware, CliCommand}
-import com.github.fedeoasi.output.Output
+import com.github.fedeoasi.deduplication.DiffFolders._
+import com.github.fedeoasi.output.{Logging, Output}
+import com.github.fedeoasi.spark.SparkSupport
+import com.github.fedeoasi.utils.StringUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import scopt.OptionParser
 import resource._
+import scopt.OptionParser
 
 /** Ranks folder pairs by similarity. The similarity used is the cosine similarity (https://en.wikipedia.org/wiki/Cosine_similarity)
   * in the vector space formed by the MD5 sums of all the nested files under a folder.
