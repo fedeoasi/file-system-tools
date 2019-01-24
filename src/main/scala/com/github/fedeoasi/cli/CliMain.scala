@@ -1,6 +1,9 @@
 package com.github.fedeoasi.cli
 
-import com.github.fedeoasi._
+import com.github.fedeoasi.catalog._
+import com.github.fedeoasi.deduplication._
+import com.github.fedeoasi.search._
+import com.github.fedeoasi.statistics._
 
 object CliMain {
   val commands: Map[String, List[CliAware]] = Map(

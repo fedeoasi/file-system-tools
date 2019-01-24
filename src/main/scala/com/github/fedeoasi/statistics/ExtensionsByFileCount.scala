@@ -1,10 +1,12 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.statistics
 
 import java.nio.file.Path
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry, FileSystemEntry}
+import com.github.fedeoasi.catalog.EntryPersistence
 import com.github.fedeoasi.cli.{CatalogConfig, CatalogConfigParsing, CliCommand}
 import com.github.fedeoasi.collection.TopKFinder
+import com.github.fedeoasi.output.Logging
 
 object ExtensionsByFileCount extends CatalogConfigParsing with Logging {
   override val command = CliCommand("extensions-by-filecount", "Rank file extensions by count.")

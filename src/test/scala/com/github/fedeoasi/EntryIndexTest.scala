@@ -1,5 +1,6 @@
 package com.github.fedeoasi
 
+import com.github.fedeoasi.catalog.EntryIndex
 import org.scalatest.{FunSpec, Matchers}
 
 class EntryIndexTest extends FunSpec with Matchers {

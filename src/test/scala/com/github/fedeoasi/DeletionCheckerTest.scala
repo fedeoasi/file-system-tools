@@ -3,7 +3,8 @@ package com.github.fedeoasi
 import java.io.FileOutputStream
 import java.nio.file.Path
 
-import com.github.fedeoasi.DeletionChecker.DeletionCheckerResult
+import com.github.fedeoasi.catalog.{DeletionChecker, EntryPersistence, GenerateCatalog}
+import com.github.fedeoasi.catalog.DeletionChecker.DeletionCheckerResult
 import org.scalatest.{FunSpec, Matchers}
 import resource._
 

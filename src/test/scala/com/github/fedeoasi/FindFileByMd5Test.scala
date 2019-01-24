@@ -3,7 +3,7 @@ package com.github.fedeoasi
 import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers}
-import FindFileByMd5._
+import com.github.fedeoasi.search.FindFileByMd5._
 import com.github.fedeoasi.Model.FileEntry
 
 class FindFileByMd5Test extends FunSpec with Matchers {

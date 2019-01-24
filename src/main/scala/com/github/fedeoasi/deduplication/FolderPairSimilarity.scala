@@ -1,13 +1,16 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.deduplication
 
 import java.nio.file.{Path, Paths}
 
-import com.github.fedeoasi.DiffFolders.folderAndNestedFileRdd
-import com.github.fedeoasi.FolderSimilarity.{folderSimilarities, withSparkContext}
+import DiffFolders.folderAndNestedFileRdd
+import com.github.fedeoasi.catalog.EntryPersistence
 import com.github.fedeoasi.cli.{CliAware, CliCommand}
+import com.github.fedeoasi.deduplication.FolderSimilarity.folderSimilarities
+import com.github.fedeoasi.output.Logging
+import com.github.fedeoasi.spark.SparkSupport
 import scopt.OptionParser
 
-object FolderPairSimilarity extends Logging with FolderComparison with CliAware {
+object FolderPairSimilarity extends Logging with FolderComparison with CliAware with SparkSupport {
   override val command = CliCommand("folder-pair-similarity", "Computes the similarity between a pair of folders")
 
   case class Config(

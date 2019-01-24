@@ -1,4 +1,4 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.output
 
 import wvlet.log.{LogFormatter, LogSupport, Logger}
 

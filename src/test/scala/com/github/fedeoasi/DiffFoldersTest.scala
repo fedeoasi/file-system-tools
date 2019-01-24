@@ -2,10 +2,10 @@ package com.github.fedeoasi
 
 import java.time.Instant
 
-import com.github.fedeoasi.FolderComparison.FolderDiff
+import com.github.fedeoasi.deduplication.FolderComparison.FolderDiff
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
 import org.scalatest.{FunSpec, Matchers}
-import DiffFolders._
+import com.github.fedeoasi.deduplication.DiffFolders._
 
 class DiffFoldersTest extends FunSpec with Matchers with SparkTest {
   private val instant = Instant.now

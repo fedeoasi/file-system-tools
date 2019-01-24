@@ -1,9 +1,11 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.search
 
 import java.nio.file.{Path, Paths}
 
 import com.github.fedeoasi.Model.{FileEntries, FileEntry}
+import com.github.fedeoasi.catalog.EntryPersistence
 import com.github.fedeoasi.cli.{CliAware, CliCommand}
+import com.github.fedeoasi.output.Logging
 import scopt.OptionParser
 
 object FindFileByMd5 extends Logging with CliAware {

@@ -1,10 +1,10 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.catalog
 
 import java.nio.file.Path
 import java.time.Instant
 
-import com.github.fedeoasi.EntryPersistence._
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry, FileSystemEntry}
+import com.github.fedeoasi.catalog.EntryPersistence._
 import com.github.tototoshi.csv.CSVReader
 import resource.managed
 

@@ -1,4 +1,4 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.deduplication
 
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
 

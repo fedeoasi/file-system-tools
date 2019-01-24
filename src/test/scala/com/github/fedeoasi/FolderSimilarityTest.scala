@@ -6,7 +6,7 @@ import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
 import org.scalatest.{FunSpec, Matchers}
 
 class FolderSimilarityTest extends FunSpec with Matchers with SparkTest {
-  import FolderSimilarity._
+  import com.github.fedeoasi.deduplication.FolderSimilarity._
 
   private val instant = Instant.now
   private val root = DirectoryEntry("/catalog", "root", instant)

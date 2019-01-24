@@ -1,4 +1,4 @@
-package com.github.fedeoasi
+package com.github.fedeoasi.spark
 
 import org.apache.spark.{SparkConf, SparkContext}
 

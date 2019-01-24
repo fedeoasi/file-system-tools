@@ -3,6 +3,7 @@ package com.github.fedeoasi
 import java.time.Instant
 
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
+import com.github.fedeoasi.catalog.EntryPersistence
 import org.scalatest.{FunSpec, Matchers}
 
 class EntryPersistenceTest extends FunSpec with Matchers with TemporaryFiles {

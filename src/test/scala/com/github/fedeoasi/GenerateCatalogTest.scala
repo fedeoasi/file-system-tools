@@ -4,8 +4,9 @@ import java.io.File
 import java.nio.file.Paths
 import java.time.Instant
 
-import com.github.fedeoasi.GenerateCatalog.GenerateCatalogReport
+import com.github.fedeoasi.catalog.GenerateCatalog.GenerateCatalogReport
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
+import com.github.fedeoasi.catalog.{EntryPersistence, GenerateCatalog}
 import org.scalatest.{FunSpec, Matchers}
 
 class GenerateCatalogTest extends FunSpec with Matchers with TemporaryFiles {
