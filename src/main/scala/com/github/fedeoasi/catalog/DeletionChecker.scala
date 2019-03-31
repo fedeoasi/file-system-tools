@@ -3,8 +3,7 @@ package com.github.fedeoasi.catalog
 import java.io.File
 import java.nio.file.{Path, Paths}
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import akka.stream.scaladsl._
 import com.github.fedeoasi.Model.FileSystemEntry
 import com.github.fedeoasi.cli.{CliAware, CliCommand}
 import com.github.fedeoasi.output.Logging
@@ -12,9 +11,8 @@ import com.github.fedeoasi.streams.StreamUtils
 import scopt.OptionParser
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
-
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 object DeletionChecker extends Logging with CliAware {
   override val command = CliCommand("deletion-checker", "Remove entries of deleted files from a catalog file.")
@@ -31,19 +29,19 @@ object DeletionChecker extends Logging with CliAware {
         (entries, Seq.empty)
     }
 
-    implicit val system: ActorSystem = ActorSystem("Downloader")
-    try {
-      implicit val materializer: ActorMaterializer = ActorMaterializer()
-      val entryAndExistsFuture = StreamUtils.doAndReport(toCheck,
-        (e: FileSystemEntry) => Some((e, new File(e.path).exists())))
+    StreamUtils.withMaterializer("DeletionChecker") { implicit materializer =>
+      val processingFlow = Flow[(FileSystemEntry, Boolean)]
+        .toMat(Sink.seq)(Keep.right)
+
+      val entryAndExistsFuture = StreamUtils.doAndReport(
+        toCheck,
+        (e: FileSystemEntry) => (e, new File(e.path).exists()),
+        processingFlow)
       val checkerResult = entryAndExistsFuture.map { entryAndExists =>
         val (toKeep, toDelete) = entryAndExists.partition(_._2)
         DeletionCheckerResult(toKeepWithoutCheck, toKeep.map(_._1), toDelete.map(_._1))
       }
       Await.result(checkerResult, 1.hour)
-    } finally {
-      println(s"shutting down actor system ${system.name}")
-      system.terminate()
     }
   }
 

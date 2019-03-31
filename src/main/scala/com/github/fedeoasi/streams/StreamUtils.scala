@@ -2,54 +2,56 @@ package com.github.fedeoasi.streams
 
 import java.time.Instant
 
-import akka.event.Logging
+import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Keep, RunnableGraph, Sink, Source}
-import akka.stream.{ActorMaterializer, Attributes, ClosedShape}
+import akka.stream.{ActorMaterializer, ClosedShape}
+import com.github.fedeoasi.output.Logging
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.control.NonFatal
 
-object StreamUtils {
-  private val BatchSize = 10000
+object StreamUtils extends Logging {
+  private val BatchSize = 1000000
 
-  def doAndReport[A, B](seq: Seq[A], transform: A => Option[B])(implicit mat: ActorMaterializer): Future[Seq[B]] = {
+  case class ProgressReport(reportedTime: Instant, processedCount: Long, totalCount: Long, elapsedTime: java.time.Duration) {
+    def estimatedCompletionTime: Instant = {
+      val millisToCompletion = (elapsedTime.toMillis / processedCount) * (totalCount - processedCount)
+      reportedTime.plusMillis(millisToCompletion)
+    }
+  }
+
+  def doAndReport[A, B, R](
+    seq: Seq[A], transform: A => B, processingSink: Sink[B, R])(implicit mat: ActorMaterializer): R = {
+
+    processAndReport(seq, transform, processingSink, report => {
+      info(s"Processed (${report.processedCount}/${report.totalCount}) elements. elapsed=${report.elapsedTime} " +
+        s"estimatedCompletionTime=${report.estimatedCompletionTime}")
+    })
+  }
+
+  def processAndReport[A, B, R](
+    seq: Seq[A], transform: A => B, processingSink: Sink[B, R], report: ProgressReport => Unit)(implicit mat: ActorMaterializer): R = {
+
     val startTime = Instant.now()
-    println(s"Starting at $startTime")
-
-    val processingFlow = Flow[Option[B]].collect { case Some(value) => value }
-      .toMat(Sink.seq)(Keep.right)
 
     val inputSize = seq.size
+    info(s"Starting to process $inputSize elements in actor system ${mat.system.name}")
 
-    val countingFlow = Flow[Option[B]]
+    val progressSink = Flow[B]
       .scan(0) { case (acc, _) => acc + 1 } // Like fold but it does not wait for completion
       .groupedWithin(BatchSize, 3.seconds)
       .map(_.max)
       .toMat(Sink.foreach { count =>
         val now = Instant.now()
         val elapsed = java.time.Duration.between(startTime, now)
-        val nanosToCompletion = (elapsed.getNano.toLong / count) * (inputSize - count)
-        val estimatedCompletionTime = now.plusNanos(nanosToCompletion)
-        println(s"Processed ($count/$inputSize) elements. elapsed=$elapsed estimatedCompletionTime=$estimatedCompletionTime")
+        report(ProgressReport(now, count, inputSize, elapsed))
       })(Keep.left)
 
-    val graph = RunnableGraph.fromGraph(GraphDSL.create(processingFlow, countingFlow)((_, _)) { implicit builder =>
+    val graph = RunnableGraph.fromGraph(GraphDSL.create(processingSink, progressSink)((_, _)) { implicit builder =>
       (s1, s2) =>
         import GraphDSL.Implicits._
 
-        val broadcast = builder.add(Broadcast[Option[B]](2))
-        val source = Source.fromIterator(() => seq.iterator)
-          .log("doAndReport")
-          .withAttributes(
-            Attributes.logLevels(
-              onElement = Logging.DebugLevel,
-              onFinish = Logging.InfoLevel,
-              onFailure = Logging.WarningLevel
-            )
-          )
-          .map(transform)
-          .recover { case NonFatal(ex) => println(ex); None }
+        val broadcast = builder.add(Broadcast[B](2))
+        val source = Source.fromIterator[A](() => seq.iterator).map(transform)
 
         source ~> broadcast.in
         broadcast.out(0) ~> s1
@@ -61,4 +63,14 @@ object StreamUtils {
     result
   }
 
+  def withMaterializer[T](systemName: String)(f: ActorMaterializer => T): T = {
+    implicit val system: ActorSystem = ActorSystem(systemName)
+    try {
+      implicit val materializer: ActorMaterializer = ActorMaterializer()
+      f(materializer)
+    } finally {
+      info(s"shutting down actor system ${system.name}")
+      system.terminate()
+    }
+  }
 }
