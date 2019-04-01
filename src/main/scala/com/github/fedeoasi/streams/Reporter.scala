@@ -6,7 +6,7 @@ import akka.NotUsed
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Keep, RunnableGraph, Sink, Source}
 import akka.stream.{ActorMaterializer, ClosedShape}
 import com.github.fedeoasi.output.Logging
-import com.github.fedeoasi.streams.StreamUtils.ProgressReport
+import com.github.fedeoasi.streams.Reporter.ProgressReport
 
 import scala.concurrent.duration._
 
