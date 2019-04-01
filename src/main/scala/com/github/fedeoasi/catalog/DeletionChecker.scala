@@ -7,7 +7,7 @@ import akka.stream.scaladsl._
 import com.github.fedeoasi.Model.FileSystemEntry
 import com.github.fedeoasi.cli.{CliAware, CliCommand}
 import com.github.fedeoasi.output.Logging
-import com.github.fedeoasi.streams.StreamUtils
+import com.github.fedeoasi.streams.{LoggingReporter, StreamUtils}
 import scopt.OptionParser
 
 import scala.concurrent.Await
@@ -30,13 +30,10 @@ object DeletionChecker extends Logging with CliAware {
     }
 
     StreamUtils.withMaterializer("DeletionChecker") { implicit materializer =>
-      val processingFlow = Flow[(FileSystemEntry, Boolean)]
-        .toMat(Sink.seq)(Keep.right)
-
-      val entryAndExistsFuture = StreamUtils.doAndReport(
+      val entryAndExistsFuture = new LoggingReporter().processAndReport(
         toCheck,
-        (e: FileSystemEntry) => (e, new File(e.path).exists()),
-        processingFlow)
+        Flow[FileSystemEntry].map(e => (e, new File(e.path).exists())),
+        Flow[(FileSystemEntry, Boolean)].toMat(Sink.seq)(Keep.right))
       val checkerResult = entryAndExistsFuture.map { entryAndExists =>
         val (toKeep, toDelete) = entryAndExists.partition(_._2)
         DeletionCheckerResult(toKeepWithoutCheck, toKeep.map(_._1), toDelete.map(_._1))

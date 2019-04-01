@@ -2,6 +2,7 @@ package com.github.fedeoasi.streams
 
 import java.time.Instant
 
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Keep, RunnableGraph, Sink, Source}
 import akka.stream.{ActorMaterializer, ClosedShape}
@@ -20,16 +21,16 @@ object StreamUtils extends Logging {
   }
 
   def doAndReport[A, B, R](
-    seq: Seq[A], transform: A => B, processingSink: Sink[B, R])(implicit mat: ActorMaterializer): R = {
+    seq: Seq[A], transformFlow: Flow[A, B, NotUsed], processingSink: Sink[B, R])(implicit mat: ActorMaterializer): R = {
 
-    processAndReport(seq, transform, processingSink, report => {
+    processAndReport(seq, transformFlow, processingSink, report => {
       info(s"Processed (${report.processedCount}/${report.totalCount}) elements. elapsed=${report.elapsedTime} " +
         s"estimatedCompletionTime=${report.estimatedCompletionTime}")
     })
   }
 
   def processAndReport[A, B, R](
-    seq: Seq[A], transform: A => B, processingSink: Sink[B, R], report: ProgressReport => Unit)(implicit mat: ActorMaterializer): R = {
+    seq: Seq[A], transformFlow: Flow[A, B, NotUsed], processingSink: Sink[B, R], report: ProgressReport => Unit)(implicit mat: ActorMaterializer): R = {
 
     val startTime = Instant.now()
 
@@ -51,7 +52,7 @@ object StreamUtils extends Logging {
         import GraphDSL.Implicits._
 
         val broadcast = builder.add(Broadcast[B](2))
-        val source = Source.fromIterator[A](() => seq.iterator).map(transform)
+        val source = Source.fromIterator[A](() => seq.iterator).via(transformFlow)
 
         source ~> broadcast.in
         broadcast.out(0) ~> s1
