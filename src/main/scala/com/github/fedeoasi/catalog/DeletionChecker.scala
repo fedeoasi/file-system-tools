@@ -30,7 +30,7 @@ object DeletionChecker extends Logging with CliAware {
     }
 
     StreamUtils.withMaterializer("DeletionChecker") { implicit materializer =>
-      val entryAndExistsFuture = new LoggingReporter().processAndReport(
+      val entryAndExistsFuture = new LoggingReporter().transformWithProgressReport(
         toCheck,
         Flow[FileSystemEntry].map(e => (e, new File(e.path).exists())),
         Flow[(FileSystemEntry, Boolean)].toMat(Sink.seq)(Keep.right))

@@ -13,7 +13,7 @@ class ReporterTest extends FunSpec with Matchers {
   it("reports using a non trivial flow and a simple sink") {
 
     val result = withMaterializer("StreamUtilsTest") { implicit materializer =>
-      new LoggingReporter().processAndReport(1 to 100, Flow[Int].statefulMapConcat[Int] { () =>
+      new LoggingReporter().transformWithProgressReport(1 to 100, Flow[Int].statefulMapConcat[Int] { () =>
         var state = 0
         n: Int =>
           state += n * 2
@@ -25,7 +25,7 @@ class ReporterTest extends FunSpec with Matchers {
 
   it("reports using a simple flow and a non trivial sink") {
     val result = withMaterializer("StreamUtilsTest") { implicit materializer =>
-      new LoggingReporter().processAndReport(1 to 100, Flow[Int].map(n => n * 2), Sink.fold[Int, Int](0)(_ + _))
+      new LoggingReporter().transformWithProgressReport(1 to 100, Flow[Int].map(n => n * 2), Sink.fold[Int, Int](0)(_ + _))
     }
     Await.result(result, 1.second) shouldBe 10100
   }
