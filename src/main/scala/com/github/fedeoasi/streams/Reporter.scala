@@ -10,7 +10,7 @@ import com.github.fedeoasi.streams.Reporter.ProgressReport
 
 import scala.concurrent.duration._
 
-class LoggingReporter(batchSize: Int = 1000000, reportingInterval: Duration = 3.seconds)(implicit mat: ActorMaterializer)
+class LoggingReporter(batchSize: Int = 1000000, reportingInterval: FiniteDuration = 3.seconds)(implicit mat: ActorMaterializer)
   extends Reporter(LoggingReporter.log, batchSize, reportingInterval)
 
 object LoggingReporter extends Logging {
@@ -20,7 +20,11 @@ object LoggingReporter extends Logging {
   }
 }
 
-class Reporter(report: ProgressReport => Unit, batchSize: Int = 1000000, reportingInterval: Duration = 3.seconds)(implicit mat: ActorMaterializer) extends Logging {
+class Reporter(
+  report: ProgressReport => Unit,
+  batchSize: Int = 1000000,
+  reportingInterval: FiniteDuration = 3.seconds)(implicit mat: ActorMaterializer) extends Logging {
+
   def processAndReport[A, B, R](
     seq: Seq[A], transformFlow: Flow[A, B, NotUsed], processingSink: Sink[B, R])(implicit mat: ActorMaterializer): R = {
 
@@ -31,7 +35,7 @@ class Reporter(report: ProgressReport => Unit, batchSize: Int = 1000000, reporti
 
     val progressSink = Flow[B]
       .scan(0) { case (acc, _) => acc + 1 } // Like fold but it does not wait for completion
-      .groupedWithin(batchSize, 3.seconds)
+      .groupedWithin(batchSize, reportingInterval)
       .map(_.max)
       .toMat(Sink.foreach { count =>
         val now = Instant.now()
