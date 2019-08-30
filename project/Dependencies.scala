@@ -14,4 +14,5 @@ object Dependencies {
   lazy val scalaCsv = "com.github.tototoshi" %% "scala-csv" % "1.3.5"
   lazy val scopt = "com.github.scopt" %% "scopt" % "3.7.0"
   lazy val sparkCore = "org.apache.spark" %% "spark-core" % "2.2.1"
+  lazy val scalaRetry = "com.github.hipjim" %% "scala-retry" % "0.2.4"
 }
