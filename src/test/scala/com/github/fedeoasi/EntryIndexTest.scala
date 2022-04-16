@@ -1,9 +1,11 @@
 package com.github.fedeoasi
 
 import com.github.fedeoasi.catalog.EntryIndex
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class EntryIndexTest extends FunSpec with Matchers {
+
+class EntryIndexTest extends AnyFunSpec with Matchers {
   private val entryIndex = new EntryIndex(Map(
     "/root" -> Seq("file.txt"),
     "/root/nested" -> Seq("file2.txt", "file3.txt")

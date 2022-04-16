@@ -1,6 +1,7 @@
 package com.github.fedeoasi.streams
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import StreamUtils._
 import akka.stream.scaladsl.{Flow, Sink}
 
@@ -9,7 +10,7 @@ import scala.concurrent.duration._
 
 import scala.collection.immutable
 
-class ReporterTest extends FunSpec with Matchers {
+class ReporterTest extends AnyFunSpec with Matchers {
   it("reports using a non trivial flow and a simple sink") {
 
     val result = withMaterializer("StreamUtilsTest") { implicit materializer =>

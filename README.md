@@ -1,6 +1,6 @@
 # File System Tools
 
-A set of command line tools to help organizing a file system. The main
+A set of command line tools to help organize a file system. The main
 use case for this is an external hard drive or a backup folder.
 
 ## Workflow
@@ -15,8 +15,8 @@ incrementally update the catalog.
 
 ## Tools
 
-The single entry point for all of the operations provided by file-system
-tools is a class called `CliMain`. It exposes as commands all of the
+The single entry point for all the operations provided by file-system
+tools is a class called `CliMain`. It exposes as commands all the
 operations described below.
 
 Using this entry point without any arguments will print out descriptive

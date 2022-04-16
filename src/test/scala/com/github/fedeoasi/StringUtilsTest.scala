@@ -1,8 +1,9 @@
 package com.github.fedeoasi
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class StringUtilsTest extends FunSpec with Matchers {
+class StringUtilsTest extends AnyFunSpec with Matchers {
   import com.github.fedeoasi.utils.StringUtils._
 
   describe("longest prefix") {

@@ -3,9 +3,10 @@ package com.github.fedeoasi
 import java.time.Instant
 
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class FileEntryTest extends FunSpec with Matchers {
+class FileEntryTest extends AnyFunSpec with Matchers {
   private val instant = Instant.now
 
   private val root = DirectoryEntry("/catalog", "root", instant)

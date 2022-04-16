@@ -4,10 +4,11 @@ import java.time.Instant
 
 import com.github.fedeoasi.deduplication.FolderComparison.FolderDiff
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import com.github.fedeoasi.deduplication.DiffFolders._
 
-class DiffFoldersTest extends FunSpec with Matchers with SparkTest {
+class DiffFoldersTest extends AnyFunSpec with Matchers with SparkTest {
   private val instant = Instant.now
   private val root = DirectoryEntry("/catalog", "root", instant)
   private val nested1 = DirectoryEntry(root.path, "nested1", instant)

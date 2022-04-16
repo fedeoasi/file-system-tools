@@ -5,10 +5,12 @@ import java.nio.file.Path
 
 import com.github.fedeoasi.catalog.{DeletionChecker, EntryPersistence, GenerateCatalog}
 import com.github.fedeoasi.catalog.DeletionChecker.DeletionCheckerResult
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
+
 import resource._
 
-class DeletionCheckerTest extends FunSpec with Matchers with TemporaryFiles {
+class DeletionCheckerTest extends AnyFunSpec with Matchers with TemporaryFiles {
   it("does not find any deletion when nothing was deleted") {
     withTempDir() { contentDir =>
       withTempDir() { catalogDir =>

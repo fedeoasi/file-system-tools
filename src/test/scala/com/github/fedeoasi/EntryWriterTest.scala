@@ -2,13 +2,13 @@ package com.github.fedeoasi
 
 import java.nio.file.Path
 import java.time.Instant
-
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry, FileSystemEntry}
 import com.github.fedeoasi.catalog.{EntryReader, EntryWriter}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import resource.managed
 
-class EntryWriterTest extends FunSpec with Matchers with TemporaryFiles {
+class EntryWriterTest extends AnyFunSpec with Matchers with TemporaryFiles {
   private val now = Instant.now()
   private val entries = Seq(
     DirectoryEntry("/", "root", now),

@@ -1,18 +1,19 @@
 import sbt._
 
 object Dependencies {
-  lazy val airframeLog = "org.wvlet.airframe" %% "airframe-log" % "0.52"
-  lazy val arm = "com.jsuereth" %% "scala-arm" % "2.0"
+  lazy val airframeLog = "org.wvlet.airframe" %% "airframe-log" % "22.4.2"
 
-  lazy val akkaStream = "com.typesafe.akka" %% "akka-stream" % "2.5.14"
-  lazy val akkaStreamTest = "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.14" % Test
+  private val akkaStreamVersion = "2.6.19"
+  lazy val akkaStream = "com.typesafe.akka" %% "akka-stream" % akkaStreamVersion
+  lazy val akkaStreamTest = "com.typesafe.akka" %% "akka-stream-testkit" % akkaStreamVersion % Test
 
-  lazy val mockito = "org.mockito" % "mockito-all" % "1.8.4" % Test
-  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.3" % Test
+  lazy val arm = "com.michaelpollmeier" %% "scala-arm" % "2.1"
+  lazy val mockito = "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test
+  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.11" % Test
   lazy val commonsIo = "commons-io" % "commons-io" % "2.4"
   lazy val commonsCodec = "commons-codec" % "commons-codec" % "1.10"
-  lazy val scalaCsv = "com.github.tototoshi" %% "scala-csv" % "1.3.5"
-  lazy val scopt = "com.github.scopt" %% "scopt" % "3.7.0"
-  lazy val sparkCore = "org.apache.spark" %% "spark-core" % "3.1.3"
+  lazy val scalaCsv = "com.github.tototoshi" %% "scala-csv" % "1.3.10"
+  lazy val scopt = "com.github.scopt" %% "scopt" % "4.0.1"
+  lazy val sparkCore = "org.apache.spark" %% "spark-core" % "3.2.1"
   lazy val scalaRetry = "com.github.hipjim" %% "scala-retry" % "0.2.4"
 }

@@ -2,13 +2,14 @@ package com.github.fedeoasi.output
 
 import com.github.fedeoasi.TemporaryFiles
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import wvlet.log.Logger
 
 import scala.io.Source
 
-class OutputTest extends FunSpec with Matchers with TemporaryFiles with MockitoSugar {
+class OutputTest extends AnyFunSpec with Matchers with TemporaryFiles with MockitoSugar {
   it("outputs to a file") {
     val logger = mock[Logger]
     withTempDir("output") { dir =>
