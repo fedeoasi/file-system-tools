@@ -27,7 +27,7 @@ object ExtensionsByFileCount extends CatalogConfigParsing with Logging {
     val countsByExtension = filesByExtension.transform { (_, files) =>
       (files.size, files.map(_.md5).toSet.size)
     }.toSeq
-    new TopKFinder(countsByExtension).top(20)(Ordering.by(_._2._1)).map {
+    new TopKFinder(countsByExtension).top(k)(Ordering.by(_._2._1)).map {
       case (ext, (count, uniqueCount)) => TopExtensionsResult(ext, count, uniqueCount)
     }
   }

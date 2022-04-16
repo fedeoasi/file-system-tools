@@ -1,16 +1,15 @@
 package com.github.fedeoasi.streams
 
-import java.time.Instant
-
 import akka.NotUsed
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Keep, RunnableGraph, Sink, Source}
-import akka.stream.{ActorMaterializer, ClosedShape}
+import akka.stream.{ClosedShape, Materializer}
 import com.github.fedeoasi.output.Logging
 import com.github.fedeoasi.streams.Reporter.ProgressReport
 
+import java.time.Instant
 import scala.concurrent.duration._
 
-class LoggingReporter(batchSize: Int = 1000000, reportingInterval: FiniteDuration = 3.seconds)(implicit mat: ActorMaterializer)
+class LoggingReporter(batchSize: Int = 1000000, reportingInterval: FiniteDuration = 3.seconds)
   extends Reporter(LoggingReporter.log, batchSize, reportingInterval)
 
 object LoggingReporter extends Logging {
@@ -23,10 +22,10 @@ object LoggingReporter extends Logging {
 class Reporter(
   consumeReport: ProgressReport => Unit,
   batchSize: Int = 1000000,
-  reportingInterval: FiniteDuration = 3.seconds)(implicit mat: ActorMaterializer) extends Logging {
+  reportingInterval: FiniteDuration = 3.seconds) extends Logging {
 
   def transformWithProgressReport[A, B, R](
-    seq: Seq[A], transformFlow: Flow[A, B, NotUsed], processingSink: Sink[B, R])(implicit mat: ActorMaterializer): R = {
+    seq: Seq[A], transformFlow: Flow[A, B, NotUsed], processingSink: Sink[B, R])(implicit mat: Materializer): R = {
 
     val startTime = Instant.now()
 
@@ -43,7 +42,7 @@ class Reporter(
         consumeReport(ProgressReport(now, count, inputSize, elapsed))
       })(Keep.left)
 
-    val graph = RunnableGraph.fromGraph(GraphDSL.create(processingSink, progressSink)((_, _)) { implicit builder =>
+    val graph = RunnableGraph.fromGraph(GraphDSL.createGraph(processingSink, progressSink)((_, _)) { implicit builder =>
       (s1, s2) =>
         import GraphDSL.Implicits._
 

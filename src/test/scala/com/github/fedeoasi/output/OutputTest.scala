@@ -15,7 +15,7 @@ class OutputTest extends AnyFunSpec with Matchers with TemporaryFiles with Mocki
     withTempDir("output") { dir =>
       val outputFile = dir.resolve("output.csv")
       Output(Some(outputFile), logger).write(Seq("hello"))
-      Source.fromFile(outputFile.toFile).getLines.mkString shouldBe "hello"
+      Source.fromFile(outputFile.toFile).getLines().mkString shouldBe "hello"
     }
   }
 
