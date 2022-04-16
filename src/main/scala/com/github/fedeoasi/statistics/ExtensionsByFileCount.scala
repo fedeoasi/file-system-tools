@@ -15,7 +15,7 @@ object ExtensionsByFileCount extends CatalogConfigParsing with Logging {
   def groupByExtension(entries: Seq[FileSystemEntry]): Map[String, Seq[FileEntry]] = {
     val files = FileEntries(entries)
     val filesAndExtensions = files.collect { case f if f.extension.isDefined => (f, f.extension.get.toLowerCase) }
-    filesAndExtensions.groupBy(_._2).mapValues(_.map(_._1))
+    filesAndExtensions.groupBy(_._2).view.mapValues(_.map(_._1)).toMap
   }
 
   def groupByExtension(catalog: Path): Map[String, Seq[FileEntry]] = {

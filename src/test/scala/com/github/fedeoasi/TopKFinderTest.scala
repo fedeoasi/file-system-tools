@@ -1,9 +1,10 @@
 package com.github.fedeoasi
 
 import com.github.fedeoasi.collection.TopKFinder
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class TopKFinderTest extends FunSpec with Matchers {
+class TopKFinderTest extends AnyFunSpec with Matchers {
   it("does not find the top in an empty sequence") {
     new TopKFinder(Seq.empty[Int]).top(3) shouldBe Seq.empty
   }

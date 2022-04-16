@@ -7,9 +7,10 @@ import java.time.Instant
 import com.github.fedeoasi.catalog.GenerateCatalog.GenerateCatalogReport
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
 import com.github.fedeoasi.catalog.{EntryPersistence, GenerateCatalog}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class GenerateCatalogTest extends FunSpec with Matchers with TemporaryFiles {
+class GenerateCatalogTest extends AnyFunSpec with Matchers with TemporaryFiles {
   private val folder = Paths.get("src/test/resources/root-folder")
   private val entries = Seq(
     directory("src/test/resources", "root-folder"),

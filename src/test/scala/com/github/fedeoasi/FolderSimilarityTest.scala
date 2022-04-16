@@ -3,9 +3,10 @@ package com.github.fedeoasi
 import java.time.Instant
 
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class FolderSimilarityTest extends FunSpec with Matchers with SparkTest {
+class FolderSimilarityTest extends AnyFunSpec with Matchers with SparkTest {
   import com.github.fedeoasi.deduplication.FolderSimilarity._
 
   private val instant = Instant.now

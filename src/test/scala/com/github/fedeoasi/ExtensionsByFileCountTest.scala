@@ -4,9 +4,10 @@ import java.nio.file.Paths
 
 import com.github.fedeoasi.catalog.GenerateCatalog
 import com.github.fedeoasi.statistics.ExtensionsByFileCount.TopExtensionsResult
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ExtensionsByFileCountTest extends FunSpec with Matchers with TemporaryFiles {
+class ExtensionsByFileCountTest extends AnyFunSpec with Matchers with TemporaryFiles {
   private val baseDir = Paths.get("src/test/resources/ExtensionsByFileCount")
 
   it("groups a catalog by extension") {

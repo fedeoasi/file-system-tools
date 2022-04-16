@@ -4,9 +4,11 @@ import java.time.Instant
 
 import com.github.fedeoasi.Model.{DirectoryEntry, FileEntry}
 import com.github.fedeoasi.catalog.EntryPersistence
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class EntryPersistenceTest extends FunSpec with Matchers with TemporaryFiles {
+
+class EntryPersistenceTest extends AnyFunSpec with Matchers with TemporaryFiles {
   private val now = Instant.now()
   private val entries = Seq(
     DirectoryEntry("/", "root", now),
