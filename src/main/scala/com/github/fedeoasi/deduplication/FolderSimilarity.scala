@@ -65,7 +65,7 @@ object FolderSimilarity extends SparkSupport with Logging with CliAware {
     // https://www.aclweb.org/anthology/P/P08/P08-2067.pdf
     val foldersByFileMd5 = foldersAndMd5s.flatMap { case (folder, md5s) =>
       md5s.map(md5 => md5 -> Folder(folder, md5s.size))
-    }.groupByKey
+    }.groupByKey()
     val commonFileCountByFolderPair = foldersByFileMd5.flatMap { case (_, folders) =>
       val sortedFolders = folders.toSeq.sortBy(_.entry.path)
       for {
@@ -96,7 +96,7 @@ object FolderSimilarity extends SparkSupport with Logging with CliAware {
             val topSimilarities = similarities
 
             val results = topSimilarities.filter(_._1._1.fileCount > 10)
-            val filteredResults = if (showAll) results.collect else results.take(50)
+            val filteredResults = if (showAll) results.collect() else results.take(50)
 
             val prefixHeader = if (printPrefix) Some("Prefix") else None
             out.write(prefixHeader.toSeq ++ Seq("Source", "Target", "SourceFileCount", "TargetFileCount", "Count", "CosineSimilarity"))

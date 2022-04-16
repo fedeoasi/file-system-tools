@@ -17,5 +17,10 @@ lazy val root = (project in file("."))
     dependencyOverrides ++= Set(
       "io.netty" % "netty-handler" % "4.1.68.Final" // needed because spark-core 3.2.1 imports both 4.1.68.Final and 4.1.50.Final of different netty libraries
     ),
-    parallelExecution in Test := false
+    parallelExecution in Test := false,
+    scalacOptions ++= Seq(
+      "-deprecation",
+      "-Ywarn-unused",
+      "-Xfatal-warnings"
+    )
   ).enablePlugins(JavaAppPackaging)

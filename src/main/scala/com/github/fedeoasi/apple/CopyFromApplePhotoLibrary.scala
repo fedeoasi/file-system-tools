@@ -44,7 +44,7 @@ object CopyFromApplePhotoLibrary extends Logging {
     info(s"${newUniqueFiles.size} files are not already in the old catalog ($existingCatalog)")
 
     val uniqueFilesByYear = newUniqueFiles.groupBy(f => LocalDateTime.ofInstant(f.modifiedTime, ZoneOffset.UTC).getYear)
-    info(uniqueFilesByYear.mapValues(_.size).toSeq.sortBy(_._1))
+    info(uniqueFilesByYear.view.mapValues(_.size).toMap.toSeq.sortBy(_._1))
 
     val toFolder = Paths.get(outputFolder)
 

@@ -5,7 +5,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 trait SparkSupport {
   def withSparkContext[T](f: SparkContext => T): T = {
     val sc = newContext
-    try f(sc) finally sc.stop
+    try f(sc) finally sc.stop()
   }
 
   private def newContext: SparkContext = {

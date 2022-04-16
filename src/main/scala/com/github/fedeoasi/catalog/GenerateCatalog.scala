@@ -4,7 +4,6 @@ import java.nio.file.{Path, Paths}
 import java.util.function.Consumer
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import com.github.fedeoasi.Model.FileSystemEntry
 import com.github.fedeoasi.cli.{CliAware, CliCommand}
 import com.github.fedeoasi.output.Logging
@@ -43,7 +42,6 @@ object GenerateCatalog extends Logging with CliAware {
     val entryWriterConsumer = new EntryWriterConsumer(catalogFile)
 
     implicit val system: ActorSystem = ActorSystem("GenerateCatalog")
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
     val readEntriesCount = try {
       new FileSystemWalk(inputFolder, existingEntryIndex, populateMd5).traverse(entryWriterConsumer)
     } finally {

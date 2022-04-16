@@ -39,7 +39,7 @@ object FoldersContainingExtension extends Logging with CliAware {
       case Some(FoldersContainingExtensionConfig(Some(extension), Some(catalog))) =>
         val entries = EntryPersistence.read(catalog)
         val folders = foldersContainingExtension(entries, extension)
-        val countsByFolder = folders.mapValues(_.size)
+        val countsByFolder = folders.view.mapValues(_.size)
         info(countsByFolder.toSeq.sortBy(_._2).reverse.take(20).mkString("\n"))
       case _ =>
     }

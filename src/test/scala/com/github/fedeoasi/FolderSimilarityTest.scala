@@ -25,7 +25,7 @@ class FolderSimilarityTest extends AnyFunSpec with Matchers with SparkTest {
     root, folder1, folder2, folder3,
     uniqueFile1, uniqueFile2, commonFile1, commonFile2, commonFile3)
 
-  private lazy val similarities = folderSimilarities(sparkContext, allEntries).collect
+  private lazy val similarities = folderSimilarities(sparkContext, allEntries).collect()
 
   it("only compares the same folder pair once") {
     similarities.foreach { case ((f1, f2), _) =>

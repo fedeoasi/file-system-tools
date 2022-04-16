@@ -53,7 +53,7 @@ object EntryPersistence {
   }
 
 
-  private def writeCsv(rows: Seq[Seq[Any]], file: Path, append: Boolean = false): Unit = {
+  private def writeCsv(rows: Seq[Seq[Any]], file: Path, append: Boolean): Unit = {
     managed(CSVWriter.open(file.toFile, append = append)).acquireAndGet { writer =>
       writer.writeAll(rows)
     }
