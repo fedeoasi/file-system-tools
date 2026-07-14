@@ -5,7 +5,7 @@ import com.github.fedeoasi.deduplication._
 import com.github.fedeoasi.search._
 import com.github.fedeoasi.statistics._
 
-object CliMain {
+object Run {
   val commands: Map[String, List[CliAware]] = Map(
     "Catalog creation and update" -> List(GenerateCatalog, DeletionChecker, MergeCatalogs),
     "Lookup" -> List(FolderByName, FindFileByMd5, FoldersContainingExtension),
